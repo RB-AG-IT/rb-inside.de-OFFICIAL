@@ -1,1 +1,155 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Login - RB-INSIDE</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f3ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .auth-box {
+      background: #ffffff;
+      padding: 24px 28px;
+      border-radius: 10px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.08);
+      max-width: 360px;
+      width: 100%;
+    }
+    h1 {
+      font-size: 22px;
+      margin-top: 0;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    h2 {
+      font-size: 18px;
+      margin: 10px 0 12px;
+      text-align: center;
+    }
+    .field {
+      margin-bottom: 12px;
+    }
+    label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    input {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 9px 10px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn-primary {
+      background: #4b6cff;
+      color: #fff;
+      margin-top: 6px;
+    }
+    .small-text {
+      font-size: 13px;
+      text-align: center;
+      margin-top: 10px;
+    }
+    a {
+      color: #4b6cff;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    #message {
+      margin-top: 10px;
+      font-size: 13px;
+      text-align: center;
+    }
+    #message.error {
+      color: #c0392b;
+    }
+    #message.success {
+      color: #27ae60;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-box">
+    <h1>RB-INSIDE</h1>
+    <h2>Login</h2>
+
+    <form id="login-form">
+      <div class="field">
+        <label for="login-email">E-Mail</label>
+        <input type="email" id="login-email" required>
+      </div>
+      <div class="field">
+        <label for="login-password">Passwort</label>
+        <input type="password" id="login-password" required>
+      </div>
+      <button type="submit" class="btn-primary">Einloggen</button>
+    </form>
+
+    <p class="small-text">
+      Noch kein Konto?
+      <a href="/registrieren/">Jetzt registrieren</a>
+    </p>
+
+    <div id="message"></div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const SUPABASE_URL = 'https://ipitjuyeplkaywatmnxg.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaXRqdXllcGxrYXl3YXRtbnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNTU3NjEsImV4cCI6MjA3ODYzMTc2MX0.JZ71lI049-_Z0bJvXIyIOoMFNR_Cgg7wLgbuOEsXCec';
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const messageBox = document.getElementById('message');
+
+    function showMessage(text, isError = false) {
+      messageBox.textContent = text;
+      messageBox.className = '';
+      if (text) {
+        messageBox.classList.add(isError ? 'error' : 'success');
+      }
+    }
+
+    const loginForm = document.getElementById('login-form');
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      showMessage('Bitte warten...', false);
+
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        showMessage(error.message || 'Login fehlgeschlagen', true);
+        return;
+      }
+
+      showMessage('Erfolgreich eingeloggt!', false);
+      // Weiterleitung zum Dashboard
+      window.location.href = '/dashboard/';
+    });
+  </script>
+</body>
+</html>
 
