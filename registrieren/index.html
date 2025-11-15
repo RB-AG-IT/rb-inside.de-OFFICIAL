@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Registrieren - RB-INSIDE</title>
+  <title>Registrieren - RHODENBURG AG</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -18,22 +18,31 @@
       padding: 24px 28px;
       border-radius: 10px;
       box-shadow: 0 0 12px rgba(0,0,0,0.08);
-      max-width: 380px;
+      max-width: 360px;
       width: 100%;
+      text-align: center;
     }
     h1 {
-      font-size: 22px;
-      margin-top: 0;
+      font-size: 26px;
+      margin: 0;
+      letter-spacing: 2px;
+      font-weight: bold;
+    }
+    .subtitle {
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 5px;
+      margin-top: 2px;
       margin-bottom: 10px;
-      text-align: center;
+      color: #333;
     }
     h2 {
       font-size: 18px;
-      margin: 10px 0 12px;
-      text-align: center;
+      margin: 6px 0 18px;
     }
     .field {
       margin-bottom: 12px;
+      text-align: left;
     }
     label {
       display: block;
@@ -62,20 +71,19 @@
     }
     .small-text {
       font-size: 13px;
-      text-align: center;
-      margin-top: 10px;
+      margin-top: 15px;
     }
     a {
       color: #4b6cff;
       text-decoration: none;
+      font-size: 13px;
     }
     a:hover {
       text-decoration: underline;
     }
     #message {
-      margin-top: 10px;
-      font-size: 13px;
-      text-align: center;
+      margin-top: 15px;
+      font-size: 14px;
     }
     #message.error {
       color: #c0392b;
@@ -86,8 +94,11 @@
   </style>
 </head>
 <body>
+
   <div class="auth-box">
-    <h1>RB-INSIDE</h1>
+    <h1>RHODENBURG</h1>
+    <div class="subtitle">A K T I E N G E S E L L S C H A F T</div>
+
     <h2>Registrieren</h2>
 
     <form id="register-form">
@@ -95,14 +106,17 @@
         <label for="reg-email">E-Mail</label>
         <input type="email" id="reg-email" required>
       </div>
+
       <div class="field">
         <label for="reg-password">Passwort</label>
         <input type="password" id="reg-password" required>
       </div>
+
       <div class="field">
         <label for="reg-password2">Passwort wiederholen</label>
         <input type="password" id="reg-password2" required>
       </div>
+
       <button type="submit" class="btn-primary">Konto erstellen</button>
     </form>
 
@@ -124,7 +138,7 @@
     const messageBox = document.getElementById('message');
 
     function showMessage(text, isError = false) {
-      messageBox.textContent = text;
+      messageBox.innerHTML = text;
       messageBox.className = '';
       if (text) {
         messageBox.classList.add(isError ? 'error' : 'success');
@@ -132,6 +146,7 @@
     }
 
     const registerForm = document.getElementById('register-form');
+
     registerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       showMessage('Bitte warten...', false);
@@ -141,7 +156,7 @@
       const password2 = document.getElementById('reg-password2').value;
 
       if (password !== password2) {
-        showMessage('Die Passwörter stimmen nicht überein.', true);
+        showMessage('Die Passwörter stimmen nicht überein.<br><small>Bitte erneut eingeben.</small>', true);
         return;
       }
 
@@ -151,18 +166,26 @@
       });
 
       if (error) {
-        showMessage(error.message || 'Registrierung fehlgeschlagen', true);
+        let msg = error.message || 'Registrierung fehlgeschlagen';
+
+        if (msg.toLowerCase().includes('password')) {
+          msg = 'Das Passwort erfüllt nicht die Anforderungen.<br><small>Bitte ein stärkeres Passwort wählen.</small>';
+        }
+
+        if (msg.toLowerCase().includes('user already registered')) {
+          msg = 'Diese E-Mail ist bereits registriert.<br><small>Bitte nutze eine andere oder logge dich ein.</small>';
+        }
+
+        showMessage(msg, true);
         return;
       }
 
-      showMessage('Registrierung erfolgreich! Du kannst dich jetzt einloggen.', false);
+      showMessage('Registrierung erfolgreich!<br><small>Bitte bestätige deine E-Mail-Adresse über den Link im Postfach.</small>', false);
 
-      // Nach kurzer Zeit zum Login
       setTimeout(() => {
         window.location.href = '/login/';
-      }, 1500);
+      }, 1800);
     });
   </script>
 </body>
 </html>
-
