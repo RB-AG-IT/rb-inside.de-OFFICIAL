@@ -153,40 +153,30 @@
       border: 1px solid #ccc;
       font-size: 13px;
     }
-    button.role-save-btn,
-    button.archive-btn {
+    button.role-save-btn {
       padding: 4px 8px;
       font-size: 12px;
       border-radius: 4px;
       border: none;
       cursor: pointer;
-      margin-right: 4px;
-    }
-    button.role-save-btn {
+      margin-left: 4px;
       background: #4c56ff;
       color: #fff;
-    }
-    button.archive-btn {
-      background: #ff7b7b;
-      color: #fff;
-    }
-    .badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-size: 11px;
-      background: #e5ffe5;
-      color: #2f7f2f;
-    }
-    .badge.archived {
-      background: #ffe5e5;
-      color: #7f2f2f;
     }
     .role-status {
       font-size: 12px;
       color: #555;
       margin-top: 2px;
       display: block;
+    }
+
+    button.details-btn {
+      padding: 4px 8px;
+      font-size: 12px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      background: #eee;
     }
   </style>
 </head>
@@ -205,18 +195,18 @@
     <main class="content">
       <div class="card">
         <h2>Benutzerverwaltung</h2>
-        <p>Alle Benutzer aus Supabase. Rolle ändern und Benutzer archivieren.</p>
+        <p>Alle Benutzer aus der Tabelle „Benutzer“. Rolle ändern und Details anzeigen.</p>
 
         <div id="globalStatus" class="status"></div>
 
         <table>
           <thead>
             <tr>
-              <th>Name</th>
+              <th>Vorname</th>
+              <th>Nachname</th>
               <th>E-Mail</th>
               <th>Rolle</th>
-              <th>Status</th>
-              <th>Aktionen</th>
+              <th>Details</th>
             </tr>
           </thead>
           <tbody id="userTableBody">
@@ -308,9 +298,9 @@
     globalStatus.textContent = 'Lade Benutzer...';
 
     const { data, error } = await supabaseClient
-      .from('benutzer')
-      .select('id, full_name, email, role, archiviert')
-      .order('full_name', { ascending: true });
+      .from('Benutzer') // ggf. zu 'benutzer' ändern, falls Tabelle klein geschrieben ist
+      .select('id, vorname, nachname, email, role')
+      .order('nachname', { ascending: true });
 
     if (error) {
       console.error(error);
@@ -331,8 +321,11 @@
     data.forEach(user => {
       const tr = document.createElement('tr');
 
-      const nameTd = document.createElement('td');
-      nameTd.textContent = user.full_name || '(kein Name)';
+      const vornameTd = document.createElement('td');
+      vornameTd.textContent = user.vorname || '-';
+
+      const nachnameTd = document.createElement('td');
+      nachnameTd.textContent = user.nachname || '-';
 
       const emailTd = document.createElement('td');
       emailTd.textContent = user.email || '-';
@@ -365,24 +358,18 @@
       roleTd.appendChild(saveBtn);
       roleTd.appendChild(roleStatus);
 
-      const statusTd = document.createElement('td');
-      const statusBadge = document.createElement('span');
-      statusBadge.className = 'badge' + (user.archiviert ? ' archived' : '');
-      statusBadge.textContent = user.archiviert ? 'Archiviert' : 'Aktiv';
-      statusTd.appendChild(statusBadge);
+      const detailsTd = document.createElement('td');
+      const detailsBtn = document.createElement('button');
+      detailsBtn.className = 'details-btn';
+      detailsBtn.textContent = 'Details';
+      detailsBtn.dataset.userId = user.id;
+      detailsTd.appendChild(detailsBtn);
 
-      const actionsTd = document.createElement('td');
-      const archiveBtn = document.createElement('button');
-      archiveBtn.className = 'archive-btn';
-      archiveBtn.dataset.userId = user.id;
-      archiveBtn.textContent = user.archiviert ? 'Reaktivieren' : 'Archivieren';
-      actionsTd.appendChild(archiveBtn);
-
-      tr.appendChild(nameTd);
+      tr.appendChild(vornameTd);
+      tr.appendChild(nachnameTd);
       tr.appendChild(emailTd);
       tr.appendChild(roleTd);
-      tr.appendChild(statusTd);
-      tr.appendChild(actionsTd);
+      tr.appendChild(detailsTd);
 
       userTableBody.appendChild(tr);
     });
@@ -393,7 +380,7 @@
     if (statusSpan) statusSpan.textContent = 'Speichere...';
 
     const { error } = await supabaseClient
-      .from('benutzer')
+      .from('Benutzer') // ggf. 'benutzer'
       .update({ role: newRole })
       .eq('id', userId);
 
@@ -404,22 +391,6 @@
     }
 
     if (statusSpan) statusSpan.textContent = 'Gespeichert ✅';
-  }
-
-  async function toggleArchive(userId, currentArchived) {
-    const { error } = await supabaseClient
-      .from('benutzer')
-      .update({ archiviert: !currentArchived })
-      .eq('id', userId);
-
-    if (error) {
-      console.error(error);
-      globalStatus.textContent = 'Fehler beim Archivieren.';
-      return;
-    }
-
-    globalStatus.textContent = 'Status aktualisiert.';
-    loadUsers();
   }
 
   // Klicks in der Tabelle auswerten
@@ -434,12 +405,9 @@
       updateUserRole(userId, newRole);
     }
 
-    if (target.classList.contains('archive-btn')) {
+    if (target.classList.contains('details-btn')) {
       const userId = target.dataset.userId;
-      const row = target.closest('tr');
-      const badge = row.querySelector('.badge');
-      const isArchived = badge.classList.contains('archived');
-      toggleArchive(userId, isArchived);
+      window.location.href = `/benutzer/detail.html?id=${userId}`;
     }
   });
 
