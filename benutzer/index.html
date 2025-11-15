@@ -19,7 +19,11 @@
       padding: 0 16px 16px;
       border-bottom: 1px solid rgba(255,255,255,0.1);
     }
-    .toggle-btn { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; }
+    .sidebar-title { font-weight: bold; color: #fff; }
+    .toggle-btn {
+      background: none; border: none; color: #fff;
+      font-size: 20px; cursor: pointer;
+    }
 
     .nav { list-style: none; padding: 0; margin: 0; }
     .nav-item a {
@@ -28,19 +32,55 @@
       padding: 10px 16px; white-space: nowrap;
     }
     .nav-item a:hover, .nav-item a.active { background: #252c46; color: #fff; }
-
     .nav-icon { width: 22px; }
     .sidebar.collapsed .nav-text { display: none; }
 
     .main { flex: 1; display: flex; flex-direction: column; }
+
     .topbar {
       display: flex; justify-content: space-between; align-items: center;
       background: #fff; padding: 12px 20px; border-bottom: 1px solid #ddd;
     }
+
+    /* Zentrales Dropdown Menü */
+    .user-menu-wrapper {
+      position: relative;
+    }
     .account-button {
       width: 38px; height: 38px; border-radius: 50%;
       display: flex; justify-content: center; align-items: center;
-      background: #4c56ff; color: #fff; text-decoration: none;
+      background: #4c56ff; color: #fff;
+      border: none; cursor: pointer;
+      font-weight: bold;
+    }
+    .user-menu {
+      position: absolute;
+      right: 0;
+      top: 46px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      min-width: 140px;
+      padding: 6px 0;
+      display: none;
+      z-index: 50;
+    }
+    .user-menu a,
+    .user-menu button {
+      display: block;
+      width: 100%;
+      padding: 8px 14px;
+      text-align: left;
+      border: none;
+      background: none;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: none;
+      color: #222;
+    }
+    .user-menu a:hover,
+    .user-menu button:hover {
+      background: #f3f3ff;
     }
 
     .content { padding: 20px; }
@@ -54,6 +94,7 @@
 
 <div class="layout">
 
+  <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-title">RB-INSIDE</div>
@@ -62,28 +103,30 @@
 
     <ul class="nav">
       <li class="nav-item">
-        <a href="/dashboard/">
+        <a href="/dashboard/index.html">
           <span class="nav-icon">🏠</span><span class="nav-text">Dashboard</span>
         </a>
       </li>
       <li class="nav-item">
-        <a href="/benutzer/" class="active">
+        <a href="/benutzer/index.html" class="active">
           <span class="nav-icon">👥</span><span class="nav-text">Benutzer</span>
         </a>
       </li>
       <li class="nav-item">
-        <a href="/account/">
+        <a href="/account/index.html">
           <span class="nav-icon">👤</span><span class="nav-text">Mein Account</span>
         </a>
       </li>
     </ul>
-
   </aside>
 
+  <!-- HAUPTBEREICH -->
   <div class="main">
     <header class="topbar">
       <h3>Benutzer</h3>
-      <a href="/account/" class="account-button">A</a>
+
+      <!-- MENU wird zentral geladen -->
+      <div id="userMenuContainer"></div>
     </header>
 
     <main class="content">
@@ -96,8 +139,37 @@
 </div>
 
 <script>
+  // Sidebar
   document.getElementById("toggleSidebar").onclick = () =>
     document.getElementById("sidebar").classList.toggle("collapsed");
+
+  // ZENTRALES DROPDOWN-MENÜ LADEN
+  fetch('/components/user-menu.html')
+    .then(res => res.text())
+    .then(html => {
+      const container = document.getElementById('userMenuContainer');
+      container.innerHTML = html;
+
+      const accountButton = container.querySelector('#accountButton');
+      const userMenu = container.querySelector('#userMenu');
+      const logoutButton = container.querySelector('#logoutButton');
+
+      // Dropdown anzeigen/verstecken
+      accountButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        userMenu.style.display = userMenu.style.display === 'block' ? 'none' : 'block';
+      });
+
+      // Klick außerhalb schließt Menü
+      document.addEventListener('click', () => {
+        userMenu.style.display = 'none';
+      });
+
+      // Logout – einfache Weiterleitung (Supabase Code steht in Account Seite)
+      logoutButton.addEventListener('click', () => {
+        window.location.href = '/login/index.html';
+      });
+    });
 </script>
 
 </body>
