@@ -54,7 +54,7 @@
 <body>
   <div class="layout">
 
-    <!-- Karte: Liste + Button oben rechts -->
+    <!-- Liste + Button -->
     <div class="card">
       <div class="header-row">
         <h1>Benutzerübersicht</h1>
@@ -77,7 +77,7 @@
       </table>
     </div>
 
-    <!-- Karte: Formular (standardmäßig versteckt) -->
+    <!-- Formular (ein-/ausblendbar) -->
     <div class="card hidden" id="formContainer">
       <h2>Neuen Benutzer anlegen</h2>
       <form id="createUserForm">
@@ -124,15 +124,20 @@
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    // NEU: Session prüfen über getSession (nicht getUser)
     async function checkSession() {
       const msg = document.getElementById("message");
-      const { data, error } = await supabase.auth.getUser();
 
-      if (error || !data.user) {
+      const { data, error } = await supabase.auth.getSession();
+      console.log("getSession data:", data, "error:", error);
+
+      const session = data?.session || null;
+      if (error || !session) {
         msg.textContent = "Nicht eingeloggt oder keine gültige Sitzung.";
         return null;
       }
-      return data.user;
+
+      return session.user;
     }
 
     async function loadBenutzer() {
@@ -148,6 +153,8 @@
         .from("benutzer")
         .select("id, vorname, nachname, email, rolle, created_at")
         .order("created_at", { ascending: true });
+
+      console.log("benutzer data:", data, "error:", error);
 
       if (error) {
         msg.textContent = "Fehler beim Laden: " + error.message;
