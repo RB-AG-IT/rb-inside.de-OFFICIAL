@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Passwort zurücksetzen - RHODENBURG AG</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f3ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .auth-box {
+      background: #ffffff;
+      padding: 24px 28px;
+      border-radius: 10px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.08);
+      max-width: 360px;
+      width: 100%;
+      text-align: center;
+    }
+    h1 {
+      font-size: 26px;
+      margin: 0;
+      letter-spacing: 2px;
+      font-weight: bold;
+    }
+    .subtitle {
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 5px;
+      margin-top: 2px;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    h2 {
+      font-size: 18px;
+      margin: 6px 0 10px;
+    }
+    p.info {
+      font-size: 13px;
+      color: #555;
+      margin-top: 0;
+      margin-bottom: 18px;
+    }
+    .field {
+      margin-bottom: 12px;
+      text-align: left;
+    }
+    label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    input {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 9px 10px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn-primary {
+      background: #4b6cff;
+      color: #fff;
+      margin-top: 6px;
+    }
+    .small-text {
+      font-size: 13px;
+      margin-top: 15px;
+    }
+    a {
+      color: #4b6cff;
+      text-decoration: none;
+      font-size: 13px;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    #message {
+      margin-top: 15px;
+      font-size: 14px;
+    }
+    #message.error {
+      color: #c0392b;
+    }
+    #message.success {
+      color: #27ae60;
+    }
+    .disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="auth-box">
+    <h1>RHODENBURG</h1>
+    <div class="subtitle">A K T I E N G E S E L L S C H A F T</div>
+
+    <h2>Neues Passwort setzen</h2>
+    <p class="info">
+      Bitte wähle ein neues Passwort für dein Konto.
+    </p>
+
+    <form id="resetpw-form">
+      <div class="field">
+        <label for="new-password">Neues Passwort</label>
+        <input type="password" id="new-password" required>
+      </div>
+
+      <div class="field">
+        <label for="new-password2">Neues Passwort wiederholen</label>
+        <input type="password" id="new-password2" required>
+      </div>
+
+      <button type="submit" class="btn-primary">Passwort speichern</button>
+    </form>
+
+    <p class="small-text">
+      Zurück zum <a href="/login/">Login</a>
+    </p>
+
+    <div id="message"></div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const SUPABASE_URL = 'https://ipitjuyeplkaywatmnxg.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaXRqdXllcGxrYXl3YXRtbnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNTU3NjEsImV4cCI6MjA3ODYzMTc2MX0.JZ71lI049-_Z0bJvXIyIOoMFNR_Cgg7wLgbuOEsXCec';
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const messageBox = document.getElementById('message');
+    const form = document.getElementById('resetpw-form');
+    const passwordInput = document.getElementById('new-password');
+    const password2Input = document.getElementById('new-password2');
+
+    function showMessage(text, isError = false) {
+      messageBox.innerHTML = text;
+      messageBox.className = '';
+      if (text) {
+        messageBox.classList.add(isError ? 'error' : 'success');
+      }
+    }
+
+    function setFormEnabled(enabled) {
+      if (enabled) {
+        form.classList.remove('disabled');
+        passwordInput.disabled = false;
+        password2Input.disabled = false;
+      } else {
+        form.classList.add('disabled');
+        passwordInput.disabled = true;
+        password2Input.disabled = true;
+      }
+    }
+
+    // Beim Laden prüfen, ob der Link gültig ist (Session aus URL)
+    window.addEventListener('load', async () => {
+      showMessage('Bitte warten, Link wird geprüft...', false);
+      setFormEnabled(false);
+
+      const { data, error } = await supabase.auth.getUser();
+
+      if (error || !data.user) {
+        showMessage(
+          'Der Link ist ungültig oder abgelaufen.<br><small>Bitte fordere einen neuen Reset-Link an.</small>',
+          true
+        );
+        return;
+      }
+
+      showMessage('', false);
+      setFormEnabled(true);
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const pw1 = passwordInput.value;
+      const pw2 = password2Input.value;
+
+      if (pw1 !== pw2) {
+        showMessage('Die Passwörter stimmen nicht überein.<br><small>Bitte erneut eingeben.</small>', true);
+        return;
+      }
+
+      if (pw1.length < 6) {
+        showMessage('Das Passwort ist zu kurz.<br><small>Mindestens 6 Zeichen.</small>', true);
+        return;
+      }
+
+      showMessage('Speichere neues Passwort...', false);
+      setFormEnabled(false);
+
+      const { data, error } = await supabase.auth.updateUser({
+        password: pw1
+      });
+
+      if (error) {
+        let msg = error.message || 'Fehler beim Aktualisieren des Passworts.';
+        showMessage(msg, true);
+        setFormEnabled(true);
+        return;
+      }
+
+      showMessage(
+        'Passwort erfolgreich geändert.<br><small>Du wirst gleich zum Login weitergeleitet.</small>',
+        false
+      );
+
+      setTimeout(() => {
+        window.location.href = '/login/';
+      }, 3000);
+    });
+  </script>
+
+</body>
+</html>
