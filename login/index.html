@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Registrieren - RB-INSIDE</title>
+  <title>Login - RHODENBURG AG</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -23,15 +23,22 @@
       text-align: center;
     }
     h1 {
-      font-size: 22px;
-      margin-top: 0;
+      font-size: 26px;
+      margin: 0;
+      letter-spacing: 2px;
+      font-weight: bold;
+    }
+    .subtitle {
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 5px;
+      margin-top: 2px;
       margin-bottom: 10px;
-      text-align: center;
+      color: #333;
     }
     h2 {
       font-size: 18px;
-      margin: 10px 0 12px;
-      text-align: center;
+      margin: 6px 0 18px;
     }
     .field {
       margin-bottom: 12px;
@@ -89,31 +96,33 @@
 <body>
 
   <div class="auth-box">
-    <h1>RB-INSIDE</h1>
-    <h2>Registrieren</h2>
+    <h1>RHODENBURG</h1>
+    <div class="subtitle">A K T I E N G E S E L L S C H A F T</div>
 
-    <form id="register-form">
+    <h2>Login</h2>
+
+    <form id="login-form">
       <div class="field">
-        <label for="reg-email">E-Mail</label>
-        <input type="email" id="reg-email" required>
+        <label for="login-email">E-Mail</label>
+        <input type="email" id="login-email" required>
       </div>
 
       <div class="field">
-        <label for="reg-password">Passwort</label>
-        <input type="password" id="reg-password" required>
+        <label for="login-password">Passwort</label>
+        <input type="password" id="login-password" required>
       </div>
 
-      <div class="field">
-        <label for="reg-password2">Passwort wiederholen</label>
-        <input type="password" id="reg-password2" required>
-      </div>
-
-      <button type="submit" class="btn-primary">Konto erstellen</button>
+      <button type="submit" class="btn-primary">Einloggen</button>
     </form>
 
+    <!-- Passwort vergessen Link -->
+    <p class="small-text" style="margin-top: 22px; margin-bottom: 6px;">
+      <a href="/login/passwort-vergessen.html">Passwort vergessen?</a>
+    </p>
+
     <p class="small-text">
-      Schon ein Konto?
-      <a href="/login/">Zum Login</a>
+      Noch kein Konto?
+      <a href="/registrieren/">Jetzt registrieren</a>
     </p>
 
     <div id="message"></div>
@@ -126,6 +135,7 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaXRqdXllcGxrYXl3YXRtbnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNTU3NjEsImV4cCI6MjA3ODYzMTc2MX0.JZ71lI049-_Z0bJvXIyIOoMFNR_Cgg7wLgbuOEsXCec';
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     const messageBox = document.getElementById('message');
 
     function showMessage(text, isError = false) {
@@ -136,47 +146,42 @@
       }
     }
 
-    const registerForm = document.getElementById('register-form');
+    const loginForm = document.getElementById('login-form');
 
-    registerForm.addEventListener('submit', async (e) => {
+    loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       showMessage('Bitte warten...', false);
 
-      const email = document.getElementById('reg-email').value.trim();
-      const password = document.getElementById('reg-password').value;
-      const password2 = document.getElementById('reg-password2').value;
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
 
-      if (password !== password2) {
-        showMessage('Die Passwörter stimmen nicht überein.<br><small>Bitte erneut eingeben.</small>', true);
-        return;
-      }
-
-      const { data, error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
 
       if (error) {
-        let msg = error.message || 'Registrierung fehlgeschlagen';
+        let msg = error.message || 'Login fehlgeschlagen';
 
-        if (msg.toLowerCase().includes('password')) {
-          msg = 'Das Passwort erfüllt nicht die Anforderungen.<br><small>Bitte ein stärkeres Passwort wählen.</small>';
+        if (msg.toLowerCase().includes('email not confirmed')) {
+          msg = 'Bitte bestätige zuerst deine E-Mail-Adresse.<br><small>Prüfe dein Postfach!</small>';
         }
 
-        if (msg.toLowerCase().includes('user already registered')) {
-          msg = 'Diese E-Mail ist bereits registriert.<br><small>Bitte nutze eine andere oder logge dich ein.</small>';
+        if (msg.toLowerCase().includes('invalid login credentials')) {
+          msg = 'E-Mail oder Passwort ist falsch.<br><small>Bitte überprüfe deine Eingaben.</small>';
         }
 
         showMessage(msg, true);
         return;
       }
 
-      showMessage('Registrierung erfolgreich!<br><small>Bitte bestätige deine E-Mail-Adresse über den Link im Postfach.</small>', false);
+      showMessage('Erfolgreich eingeloggt...', false);
 
       setTimeout(() => {
-        window.location.href = '/login/';
-      }, 1800);
+        window.location.href = '/dashboard/';
+      }, 700);
     });
   </script>
+
 </body>
 </html>
