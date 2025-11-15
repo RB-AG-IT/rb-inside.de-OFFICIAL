@@ -15,7 +15,7 @@
     }
     .sidebar.collapsed { width: 70px; }
     .sidebar-header {
-      display: flex; justify-content: space-between;
+      display: flex; justify-content: space-between; align-items: center;
       padding: 0 16px 16px;
       border-bottom: 1px solid rgba(255,255,255,0.1);
     }
@@ -35,6 +35,42 @@
     .nav-icon { width: 22px; }
     .sidebar.collapsed .nav-text { display: none; }
 
+    /* Footer-Menü unten links */
+    .sidebar-footer {
+      margin-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.12);
+      padding: 10px 12px 0;
+    }
+    .sidebar-footer-toggle {
+      width: 100%;
+      padding: 8px 10px;
+      background: #202743;
+      color: #fff;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      text-align: left;
+      font-size: 13px;
+    }
+    .sidebar-footer-menu {
+      margin-top: 6px;
+      display: none;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .sidebar-footer-menu a {
+      display: block;
+      font-size: 13px;
+      color: #cfd2ff;
+      text-decoration: none;
+      padding: 4px 4px;
+      border-radius: 4px;
+    }
+    .sidebar-footer-menu a:hover {
+      background: #252c46;
+      color: #fff;
+    }
+
     .main { flex: 1; display: flex; flex-direction: column; }
 
     .topbar {
@@ -42,7 +78,7 @@
       background: #fff; padding: 12px 20px; border-bottom: 1px solid #ddd;
     }
 
-    /* Zentrales Dropdown Menü */
+    /* Dropdown-Menü oben rechts (User-Menü) */
     .user-menu-wrapper {
       position: relative;
     }
@@ -94,38 +130,12 @@
 
 <div class="layout">
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-title">RB-INSIDE</div>
-      <button class="toggle-btn" id="toggleSidebar">☰</button>
-    </div>
+  <!-- Sidebar wird zentral geladen -->
+  <aside id="sidebar" class="sidebar"></aside>
 
-    <ul class="nav">
-      <li class="nav-item">
-        <a href="/dashboard/index.html">
-          <span class="nav-icon">🏠</span><span class="nav-text">Dashboard</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a href="/benutzer/index.html" class="active">
-          <span class="nav-icon">👥</span><span class="nav-text">Benutzer</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a href="/account/index.html">
-          <span class="nav-icon">👤</span><span class="nav-text">Mein Account</span>
-        </a>
-      </li>
-    </ul>
-  </aside>
-
-  <!-- HAUPTBEREICH -->
   <div class="main">
     <header class="topbar">
       <h3>Benutzer</h3>
-
-      <!-- MENU wird zentral geladen -->
       <div id="userMenuContainer"></div>
     </header>
 
@@ -135,15 +145,46 @@
       </div>
     </main>
   </div>
-
 </div>
 
 <script>
-  // Sidebar
-  document.getElementById("toggleSidebar").onclick = () =>
-    document.getElementById("sidebar").classList.toggle("collapsed");
+  // Sidebar laden
+  fetch('/components/sidebar.html')
+    .then(res => res.text())
+    .then(html => {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.innerHTML = html;
 
-  // ZENTRALES DROPDOWN-MENÜ LADEN
+      const toggleSidebar = document.getElementById('toggleSidebar');
+      const footerToggle = document.getElementById('sidebarFooterToggle');
+      const footerMenu = document.getElementById('sidebarFooterMenu');
+
+      // Sidebar ein-/ausklappen
+      toggleSidebar.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+      });
+
+      // Footer-Menü ein-/ausklappen
+      footerToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        footerMenu.style.display = footerMenu.style.display === 'flex' ? 'none' : 'flex';
+      });
+
+      document.addEventListener('click', () => {
+        footerMenu.style.display = 'none';
+      });
+
+      // Aktiven Menüpunkt oben markieren
+      const path = window.location.pathname;
+      sidebar.querySelectorAll('.nav a').forEach(link => {
+        const page = link.getAttribute('data-page');
+        if (path.includes('/benutzer/') && page === 'benutzer') {
+          link.classList.add('active');
+        }
+      });
+    });
+
+  // Zentrales User-Menü laden
   fetch('/components/user-menu.html')
     .then(res => res.text())
     .then(html => {
@@ -154,18 +195,16 @@
       const userMenu = container.querySelector('#userMenu');
       const logoutButton = container.querySelector('#logoutButton');
 
-      // Dropdown anzeigen/verstecken
       accountButton.addEventListener('click', (event) => {
         event.stopPropagation();
         userMenu.style.display = userMenu.style.display === 'block' ? 'none' : 'block';
       });
 
-      // Klick außerhalb schließt Menü
       document.addEventListener('click', () => {
         userMenu.style.display = 'none';
       });
 
-      // Logout – einfache Weiterleitung (Supabase Code steht in Account Seite)
+      // Logout – einfache Weiterleitung
       logoutButton.addEventListener('click', () => {
         window.location.href = '/login/index.html';
       });
