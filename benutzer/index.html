@@ -78,10 +78,8 @@
       background: #fff; padding: 12px 20px; border-bottom: 1px solid #ddd;
     }
 
-    /* Dropdown-Menü oben rechts (User-Menü) */
-    .user-menu-wrapper {
-      position: relative;
-    }
+    /* User-Menü oben rechts */
+    .user-menu-wrapper { position: relative; }
     .account-button {
       width: 38px; height: 38px; border-radius: 50%;
       display: flex; justify-content: center; align-items: center;
@@ -120,9 +118,58 @@
     }
 
     .content { padding: 20px; }
-    .empty-box {
-      background: #fff; border-radius: 8px; padding: 30px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05); text-align: center;
+
+    .card {
+      background: #fff; border-radius: 10px; padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    h2 { margin-top: 0; }
+
+    .status {
+      margin-top: 8px;
+      font-size: 13px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+    }
+    th {
+      background: #f3f3ff;
+      font-weight: bold;
+    }
+    tr:hover td {
+      background: #fafafa;
+    }
+    select.role-select {
+      padding: 4px 6px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 13px;
+    }
+    button.role-save-btn {
+      padding: 4px 8px;
+      font-size: 12px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      background: #4c56ff;
+      color: #fff;
+      margin-left: 6px;
+    }
+    .role-status {
+      font-size: 12px;
+      color: #555;
+      margin-top: 2px;
+      display: block;
     }
   </style>
 </head>
@@ -140,14 +187,41 @@
     </header>
 
     <main class="content">
-      <div class="empty-box">
-        Hier kommen später alle Benutzer rein.
+      <div class="card">
+        <h2>Benutzerverwaltung</h2>
+        <p>Alle Benutzer aus Supabase. Rolle kann hier geändert werden.</p>
+
+        <div id="globalStatus" class="status"></div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>E-Mail</th>
+              <th>Rolle</th>
+            </tr>
+          </thead>
+          <tbody id="userTableBody">
+            <tr>
+              <td colspan="3">Lade Benutzer...</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </main>
   </div>
 </div>
 
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+  const supabaseUrl = 'https://ipitjuyeplkaywatmnxg.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaXRqdXllcGxrYXl3YXRtbnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNTU3NjEsImV4cCI6MjA3ODYzMTc2MX0.JZ71lI049-_Z0bJvXIyIOoMFNR_Cgg7LgbuOEsXCec';
+  const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+  const userTableBody = document.getElementById('userTableBody');
+  const globalStatus = document.getElementById('globalStatus');
+
   // Sidebar laden
   fetch('/components/sidebar.html')
     .then(res => res.text())
@@ -159,12 +233,10 @@
       const footerToggle = document.getElementById('sidebarFooterToggle');
       const footerMenu = document.getElementById('sidebarFooterMenu');
 
-      // Sidebar ein-/ausklappen
       toggleSidebar.addEventListener('click', () => {
         sidebar.classList.toggle('collapsed');
       });
 
-      // Footer-Menü ein-/ausklappen
       footerToggle.addEventListener('click', (e) => {
         e.stopPropagation();
         footerMenu.style.display = footerMenu.style.display === 'flex' ? 'none' : 'flex';
@@ -174,7 +246,6 @@
         footerMenu.style.display = 'none';
       });
 
-      // Aktiven Menüpunkt oben markieren
       const path = window.location.pathname;
       sidebar.querySelectorAll('.nav a').forEach(link => {
         const page = link.getAttribute('data-page');
@@ -184,7 +255,7 @@
       });
     });
 
-  // Zentrales User-Menü laden
+  // User-Menü (oben rechts) laden
   fetch('/components/user-menu.html')
     .then(res => res.text())
     .then(html => {
@@ -204,11 +275,122 @@
         userMenu.style.display = 'none';
       });
 
-      // Logout – einfache Weiterleitung
-      logoutButton.addEventListener('click', () => {
+      // Logout mit Supabase
+      logoutButton.addEventListener('click', async () => {
+        try {
+          await supabaseClient.auth.signOut();
+        } catch (e) {
+          console.error(e);
+        }
         window.location.href = '/login/index.html';
       });
     });
+
+  // Rollen-Auswahlmöglichkeiten
+  const ROLE_OPTIONS = ['User', 'Manager', 'Admin'];
+
+  async function loadUsers() {
+    globalStatus.textContent = 'Lade Benutzer...';
+
+    const { data, error } = await supabaseClient
+      .from('profiles')
+      .select('id, full_name, email, role')
+      .order('full_name', { ascending: true });
+
+    if (error) {
+      console.error(error);
+      globalStatus.textContent = 'Fehler beim Laden der Benutzer.';
+      userTableBody.innerHTML = '<tr><td colspan="3">Fehler beim Laden.</td></tr>';
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      globalStatus.textContent = 'Keine Benutzer gefunden.';
+      userTableBody.innerHTML = '<tr><td colspan="3">Keine Benutzer vorhanden.</td></tr>';
+      return;
+    }
+
+    globalStatus.textContent = '';
+    userTableBody.innerHTML = '';
+
+    data.forEach(user => {
+      const tr = document.createElement('tr');
+
+      const nameTd = document.createElement('td');
+      nameTd.textContent = user.full_name || '(kein Name)';
+
+      const emailTd = document.createElement('td');
+      emailTd.textContent = user.email || '-';
+
+      const roleTd = document.createElement('td');
+
+      const select = document.createElement('select');
+      select.className = 'role-select';
+      select.dataset.userId = user.id;
+
+      ROLE_OPTIONS.forEach(role => {
+        const opt = document.createElement('option');
+        opt.value = role;
+        opt.textContent = role;
+        if ((user.role || 'User') === role) {
+          opt.selected = true;
+        }
+        select.appendChild(opt);
+      });
+
+      const saveBtn = document.createElement('button');
+      saveBtn.className = 'role-save-btn';
+      saveBtn.textContent = 'Speichern';
+      saveBtn.dataset.userId = user.id;
+
+      const statusSpan = document.createElement('span');
+      statusSpan.className = 'role-status';
+      statusSpan.id = `role-status-${user.id}`;
+      statusSpan.textContent = '';
+
+      roleTd.appendChild(select);
+      roleTd.appendChild(saveBtn);
+      roleTd.appendChild(statusSpan);
+
+      tr.appendChild(nameTd);
+      tr.appendChild(emailTd);
+      tr.appendChild(roleTd);
+
+      userTableBody.appendChild(tr);
+    });
+  }
+
+  async function updateUserRole(userId, newRole) {
+    const statusSpan = document.getElementById(`role-status-${userId}`);
+    if (statusSpan) statusSpan.textContent = 'Speichere...';
+
+    const { error } = await supabaseClient
+      .from('profiles')
+      .update({ role: newRole })
+      .eq('id', userId);
+
+    if (error) {
+      console.error(error);
+      if (statusSpan) statusSpan.textContent = 'Fehler beim Speichern.';
+      return;
+    }
+
+    if (statusSpan) statusSpan.textContent = 'Gespeichert ✅';
+  }
+
+  // Klick auf "Speichern" je Benutzer
+  userTableBody.addEventListener('click', (event) => {
+    if (event.target.classList.contains('role-save-btn')) {
+      const userId = event.target.dataset.userId;
+      const select = userTableBody.querySelector(`select.role-select[data-user-id="${userId}"]`);
+      if (!select) return;
+      const newRole = select.value;
+      updateUserRole(userId, newRole);
+    }
+  });
+
+  // Beim Laden Benutzer holen
+  window.addEventListener('load', loadUsers);
 </script>
 
 </body>
