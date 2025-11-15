@@ -35,7 +35,6 @@
     .nav-icon { width: 22px; }
     .sidebar.collapsed .nav-text { display: none; }
 
-    /* Footer-Menü unten links */
     .sidebar-footer {
       margin-top: 20px;
       border-top: 1px solid rgba(255,255,255,0.12);
@@ -78,7 +77,6 @@
       background: #fff; padding: 12px 20px; border-bottom: 1px solid #ddd;
     }
 
-    /* User-Menü oben rechts */
     .user-menu-wrapper { position: relative; }
     .account-button {
       width: 38px; height: 38px; border-radius: 50%;
@@ -155,15 +153,34 @@
       border: 1px solid #ccc;
       font-size: 13px;
     }
-    button.role-save-btn {
+    button.role-save-btn,
+    button.archive-btn {
       padding: 4px 8px;
       font-size: 12px;
       border-radius: 4px;
       border: none;
       cursor: pointer;
+      margin-right: 4px;
+    }
+    button.role-save-btn {
       background: #4c56ff;
       color: #fff;
-      margin-left: 6px;
+    }
+    button.archive-btn {
+      background: #ff7b7b;
+      color: #fff;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: #e5ffe5;
+      color: #2f7f2f;
+    }
+    .badge.archived {
+      background: #ffe5e5;
+      color: #7f2f2f;
     }
     .role-status {
       font-size: 12px;
@@ -177,7 +194,6 @@
 
 <div class="layout">
 
-  <!-- Sidebar wird zentral geladen -->
   <aside id="sidebar" class="sidebar"></aside>
 
   <div class="main">
@@ -189,7 +205,7 @@
     <main class="content">
       <div class="card">
         <h2>Benutzerverwaltung</h2>
-        <p>Alle Benutzer aus Supabase. Rolle kann hier geändert werden.</p>
+        <p>Alle Benutzer aus Supabase. Rolle ändern und Benutzer archivieren.</p>
 
         <div id="globalStatus" class="status"></div>
 
@@ -199,11 +215,13 @@
               <th>Name</th>
               <th>E-Mail</th>
               <th>Rolle</th>
+              <th>Status</th>
+              <th>Aktionen</th>
             </tr>
           </thead>
           <tbody id="userTableBody">
             <tr>
-              <td colspan="3">Lade Benutzer...</td>
+              <td colspan="5">Lade Benutzer...</td>
             </tr>
           </tbody>
         </table>
@@ -212,7 +230,6 @@
   </div>
 </div>
 
-<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   const supabaseUrl = 'https://ipitjuyeplkaywatmnxg.supabase.co';
@@ -221,6 +238,8 @@
 
   const userTableBody = document.getElementById('userTableBody');
   const globalStatus = document.getElementById('globalStatus');
+
+  const ROLE_OPTIONS = ['User', 'Manager', 'Admin'];
 
   // Sidebar laden
   fetch('/components/sidebar.html')
@@ -255,7 +274,7 @@
       });
     });
 
-  // User-Menü (oben rechts) laden
+  // User-Menü laden
   fetch('/components/user-menu.html')
     .then(res => res.text())
     .then(html => {
@@ -275,7 +294,6 @@
         userMenu.style.display = 'none';
       });
 
-      // Logout mit Supabase
       logoutButton.addEventListener('click', async () => {
         try {
           await supabaseClient.auth.signOut();
@@ -286,27 +304,24 @@
       });
     });
 
-  // Rollen-Auswahlmöglichkeiten
-  const ROLE_OPTIONS = ['User', 'Manager', 'Admin'];
-
   async function loadUsers() {
     globalStatus.textContent = 'Lade Benutzer...';
 
     const { data, error } = await supabaseClient
-      .from('profiles')
-      .select('id, full_name, email, role')
+      .from('benutzer')
+      .select('id, full_name, email, role, archiviert')
       .order('full_name', { ascending: true });
 
     if (error) {
       console.error(error);
       globalStatus.textContent = 'Fehler beim Laden der Benutzer.';
-      userTableBody.innerHTML = '<tr><td colspan="3">Fehler beim Laden.</td></tr>';
+      userTableBody.innerHTML = '<tr><td colspan="5">Fehler beim Laden.</td></tr>';
       return;
     }
 
     if (!data || data.length === 0) {
       globalStatus.textContent = 'Keine Benutzer gefunden.';
-      userTableBody.innerHTML = '<tr><td colspan="3">Keine Benutzer vorhanden.</td></tr>';
+      userTableBody.innerHTML = '<tr><td colspan="5">Keine Benutzer vorhanden.</td></tr>';
       return;
     }
 
@@ -323,7 +338,6 @@
       emailTd.textContent = user.email || '-';
 
       const roleTd = document.createElement('td');
-
       const select = document.createElement('select');
       select.className = 'role-select';
       select.dataset.userId = user.id;
@@ -343,18 +357,32 @@
       saveBtn.textContent = 'Speichern';
       saveBtn.dataset.userId = user.id;
 
-      const statusSpan = document.createElement('span');
-      statusSpan.className = 'role-status';
-      statusSpan.id = `role-status-${user.id}`;
-      statusSpan.textContent = '';
+      const roleStatus = document.createElement('span');
+      roleStatus.className = 'role-status';
+      roleStatus.id = `role-status-${user.id}`;
 
       roleTd.appendChild(select);
       roleTd.appendChild(saveBtn);
-      roleTd.appendChild(statusSpan);
+      roleTd.appendChild(roleStatus);
+
+      const statusTd = document.createElement('td');
+      const statusBadge = document.createElement('span');
+      statusBadge.className = 'badge' + (user.archiviert ? ' archived' : '');
+      statusBadge.textContent = user.archiviert ? 'Archiviert' : 'Aktiv';
+      statusTd.appendChild(statusBadge);
+
+      const actionsTd = document.createElement('td');
+      const archiveBtn = document.createElement('button');
+      archiveBtn.className = 'archive-btn';
+      archiveBtn.dataset.userId = user.id;
+      archiveBtn.textContent = user.archiviert ? 'Reaktivieren' : 'Archivieren';
+      actionsTd.appendChild(archiveBtn);
 
       tr.appendChild(nameTd);
       tr.appendChild(emailTd);
       tr.appendChild(roleTd);
+      tr.appendChild(statusTd);
+      tr.appendChild(actionsTd);
 
       userTableBody.appendChild(tr);
     });
@@ -365,7 +393,7 @@
     if (statusSpan) statusSpan.textContent = 'Speichere...';
 
     const { error } = await supabaseClient
-      .from('profiles')
+      .from('benutzer')
       .update({ role: newRole })
       .eq('id', userId);
 
@@ -378,18 +406,43 @@
     if (statusSpan) statusSpan.textContent = 'Gespeichert ✅';
   }
 
-  // Klick auf "Speichern" je Benutzer
+  async function toggleArchive(userId, currentArchived) {
+    const { error } = await supabaseClient
+      .from('benutzer')
+      .update({ archiviert: !currentArchived })
+      .eq('id', userId);
+
+    if (error) {
+      console.error(error);
+      globalStatus.textContent = 'Fehler beim Archivieren.';
+      return;
+    }
+
+    globalStatus.textContent = 'Status aktualisiert.';
+    loadUsers();
+  }
+
+  // Klicks in der Tabelle auswerten
   userTableBody.addEventListener('click', (event) => {
-    if (event.target.classList.contains('role-save-btn')) {
-      const userId = event.target.dataset.userId;
+    const target = event.target;
+
+    if (target.classList.contains('role-save-btn')) {
+      const userId = target.dataset.userId;
       const select = userTableBody.querySelector(`select.role-select[data-user-id="${userId}"]`);
       if (!select) return;
       const newRole = select.value;
       updateUserRole(userId, newRole);
     }
+
+    if (target.classList.contains('archive-btn')) {
+      const userId = target.dataset.userId;
+      const row = target.closest('tr');
+      const badge = row.querySelector('.badge');
+      const isArchived = badge.classList.contains('archived');
+      toggleArchive(userId, isArchived);
+    }
   });
 
-  // Beim Laden Benutzer holen
   window.addEventListener('load', loadUsers);
 </script>
 
