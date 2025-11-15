@@ -6,40 +6,121 @@
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; font-family: Arial, sans-serif; background: #f3f3ff; }
-    .layout { max-width: 1000px; margin: 40px auto; background: #fff; padding: 20px; border-radius: 8px; }
-    h1 { margin-top: 0; }
+    .layout { max-width: 1000px; margin: 40px auto; }
+    .card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    h1, h2 { margin: 0; }
     #message { margin: 10px 0; color: red; }
+    #success { margin: 10px 0; color: green; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { padding: 8px 10px; border-bottom: 1px solid #ddd; text-align: left; }
     th { background: #151a2b; color: #fff; }
     tr:nth-child(even) { background: #f7f7ff; }
-    button { padding: 4px 10px; border: none; border-radius: 4px; cursor: pointer; background: #151a2b; color: #fff; }
+    button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background: #151a2b;
+      color: #fff;
+      font-size: 14px;
+    }
     button:hover { opacity: 0.9; }
+
+    form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; margin-top: 10px; }
+    label { font-size: 14px; }
+    input, select {
+      width: 100%;
+      padding: 6px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    .full-width { grid-column: 1 / 3; }
+
+    .hidden { display: none; }
   </style>
 </head>
 <body>
   <div class="layout">
-    <h1>Benutzerübersicht</h1>
-    <div id="message"></div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Vorname</th>
-          <th>Nachname</th>
-          <th>E-Mail</th>
-          <th>Rolle</th>
-          <th>Details</th>
-        </tr>
-      </thead>
-      <tbody id="userTableBody"></tbody>
-    </table>
+    <!-- Karte: Liste + Button oben rechts -->
+    <div class="card">
+      <div class="header-row">
+        <h1>Benutzerübersicht</h1>
+        <button id="openFormBtn">Benutzer anlegen</button>
+      </div>
+      <div id="message"></div>
+      <div id="success"></div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Vorname</th>
+            <th>Nachname</th>
+            <th>E-Mail</th>
+            <th>Rolle</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody id="userTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Karte: Formular (standardmäßig versteckt) -->
+    <div class="card hidden" id="formContainer">
+      <h2>Neuen Benutzer anlegen</h2>
+      <form id="createUserForm">
+        <div>
+          <label>Vorname<br>
+            <input type="text" id="vorname" required>
+          </label>
+        </div>
+        <div>
+          <label>Nachname<br>
+            <input type="text" id="nachname" required>
+          </label>
+        </div>
+        <div>
+          <label>E-Mail<br>
+            <input type="email" id="email" required>
+          </label>
+        </div>
+        <div>
+          <label>Rolle<br>
+            <select id="rolle">
+              <option value="user">user</option>
+              <option value="superadmin">superadmin</option>
+            </select>
+          </label>
+        </div>
+        <div class="full-width">
+          <label>Passwort<br>
+            <input type="password" id="password" required>
+          </label>
+        </div>
+        <div class="full-width">
+          <button type="submit">Benutzer speichern</button>
+        </div>
+      </form>
+    </div>
+
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = "https://ipitjuyeplkaywatmnxg.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaXRqdXllcGxrYXl3YXRtbnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNTU3NjEsImV4cCI6MjA3ODYzMTc2MX0.JZ71lI049-_Z0bJvXIyIOoMFNR_Cgg7wLgbuOEsXCec";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaXRqdXllcGxrYXl3YXRtbnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNTU3NjEsImV4cCI6MjA3ODYzMTc2MX0.JZ71lI049-_Z0bJvXIyIOoMFNR_Cgg7WlgbuOEsXCec";
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -47,16 +128,10 @@
       const msg = document.getElementById("message");
       const { data, error } = await supabase.auth.getUser();
 
-      console.log("getUser data:", data);
-      console.log("getUser error:", error);
-
       if (error || !data.user) {
         msg.textContent = "Nicht eingeloggt oder keine gültige Sitzung.";
-        // Optional: zur Login-Seite leiten
-        // window.location.href = "/login/";
         return null;
       }
-
       return data.user;
     }
 
@@ -73,9 +148,6 @@
         .from("benutzer")
         .select("id, vorname, nachname, email, rolle, created_at")
         .order("created_at", { ascending: true });
-
-      console.log("benutzer data:", data);
-      console.log("benutzer error:", error);
 
       if (error) {
         msg.textContent = "Fehler beim Laden: " + error.message;
@@ -94,133 +166,85 @@
           <td>${u.nachname || ""}</td>
           <td>${u.email || ""}</td>
           <td>${u.rolle || ""}</td>
-          <td><button data-id="${u.id}">Details</button></td>
+          <td><button type="button" data-id="${u.id}">Details</button></td>
         `;
         tbody.appendChild(tr);
       });
-
-      tbody.addEventListener("click", (e) => {
-        if (e.target.tagName === "BUTTON") {
-          const id = e.target.getAttribute("data-id");
-          window.location.href = "benutzer-details.html?id=" + encodeURIComponent(id);
-        }
-      }, { once: true });
     }
 
-    document.addEventListener("DOMContentLoaded", loadBenutzer);
-  </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="UTF-8">
-  <title>Benutzer - RB-INSIDE</title>
-  <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: Arial, sans-serif; background: #f3f3ff; }
-    .layout { max-width: 1000px; margin: 40px auto; background: #fff; padding: 20px; border-radius: 8px; }
-    h1 { margin-top: 0; }
-    #message { margin: 10px 0; color: red; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { padding: 8px 10px; border-bottom: 1px solid #ddd; text-align: left; }
-    th { background: #151a2b; color: #fff; }
-    tr:nth-child(even) { background: #f7f7ff; }
-    button { padding: 4px 10px; border: none; border-radius: 4px; cursor: pointer; background: #151a2b; color: #fff; }
-    button:hover { opacity: 0.9; }
-  </style>
-</head>
-<body>
-  <div class="layout">
-    <h1>Benutzerübersicht</h1>
-    <div id="message"></div>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Vorname</th>
-          <th>Nachname</th>
-          <th>E-Mail</th>
-          <th>Rolle</th>
-          <th>Details</th>
-        </tr>
-      </thead>
-      <tbody id="userTableBody"></tbody>
-    </table>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = "https://ipitjuyeplkaywatmnxg.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaXRqdXllcGxrYXl3YXRtbnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNTU3NjEsImV4cCI6MjA3ODYzMTc2MX0.JZ71lI049-_Z0bJvXIyIOoMFNR_Cgg7wLgbuOEsXCec";
-
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    async function checkSession() {
+    async function createBenutzer(event) {
+      event.preventDefault();
       const msg = document.getElementById("message");
-      const { data, error } = await supabase.auth.getUser();
-
-      console.log("getUser data:", data);
-      console.log("getUser error:", error);
-
-      if (error || !data.user) {
-        msg.textContent = "Nicht eingeloggt oder keine gültige Sitzung.";
-        // Optional: zur Login-Seite leiten
-        // window.location.href = "/login/";
-        return null;
-      }
-
-      return data.user;
-    }
-
-    async function loadBenutzer() {
-      const tbody = document.getElementById("userTableBody");
-      const msg = document.getElementById("message");
-      tbody.innerHTML = "";
+      const success = document.getElementById("success");
       msg.textContent = "";
+      success.textContent = "";
 
       const user = await checkSession();
       if (!user) return;
 
-      const { data, error } = await supabase
-        .from("benutzer")
-        .select("id, vorname, nachname, email, rolle, created_at")
-        .order("created_at", { ascending: true });
+      const vorname = document.getElementById("vorname").value.trim();
+      const nachname = document.getElementById("nachname").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const rolle = document.getElementById("rolle").value;
+      const password = document.getElementById("password").value;
 
-      console.log("benutzer data:", data);
-      console.log("benutzer error:", error);
-
-      if (error) {
-        msg.textContent = "Fehler beim Laden: " + error.message;
+      if (!email || !password || !vorname || !nachname) {
+        msg.textContent = "Bitte alle Felder ausfüllen.";
         return;
       }
 
-      if (!data || data.length === 0) {
-        msg.textContent = "Keine Benutzer gefunden (oder keine Berechtigung).";
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !sessionData.session) {
+        msg.textContent = "Keine gültige Sitzung (Token fehlt).";
         return;
       }
+      const token = sessionData.session.access_token;
 
-      data.forEach((u) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${u.vorname || ""}</td>
-          <td>${u.nachname || ""}</td>
-          <td>${u.email || ""}</td>
-          <td>${u.rolle || ""}</td>
-          <td><button data-id="${u.id}">Details</button></td>
-        `;
-        tbody.appendChild(tr);
-      });
+      try {
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/superadmin_user_anlegen`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ vorname, nachname, email, rolle, password })
+        });
 
-      tbody.addEventListener("click", (e) => {
-        if (e.target.tagName === "BUTTON") {
-          const id = e.target.getAttribute("data-id");
-          window.location.href = "benutzer-details.html?id=" + encodeURIComponent(id);
+        const result = await response.json();
+        console.log("Edge Function result:", result);
+
+        if (!response.ok) {
+          msg.textContent = result.error || "Fehler beim Anlegen des Benutzers.";
+          return;
         }
-      }, { once: true });
+
+        success.textContent = "Benutzer erfolgreich angelegt.";
+        document.getElementById("createUserForm").reset();
+        loadBenutzer();
+      } catch (err) {
+        console.error(err);
+        msg.textContent = "Verbindungsfehler zur Edge Function.";
+      }
     }
 
-    document.addEventListener("DOMContentLoaded", loadBenutzer);
+    function handleDetailsClick(e) {
+      if (e.target.matches("button[data-id]")) {
+        const id = e.target.getAttribute("data-id");
+        window.location.href = "benutzer-details.html?id=" + encodeURIComponent(id);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("openFormBtn").addEventListener("click", () => {
+        const box = document.getElementById("formContainer");
+        box.classList.toggle("hidden");
+      });
+
+      document.getElementById("createUserForm").addEventListener("submit", createBenutzer);
+      document.getElementById("userTableBody").addEventListener("click", handleDetailsClick);
+
+      loadBenutzer();
+    });
   </script>
 </body>
 </html>
