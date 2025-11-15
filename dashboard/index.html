@@ -1,1 +1,111 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard - RB-INSIDE</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f3ff;
+      margin: 0;
+      padding: 20px;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+      padding: 10px 16px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+    }
+    .topbar h1 {
+      font-size: 20px;
+      margin: 0;
+    }
+    .content {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+    button {
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      margin-right: 8px;
+    }
+    .btn-logout {
+      background: #e74c3c;
+      color: #fff;
+    }
+    .btn {
+      background: #4b6cff;
+      color: #fff;
+    }
+    #info {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <h1>RB-INSIDE Dashboard</h1>
+    <div>
+      <button class="btn-logout" id="logout-btn">Logout</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <h2>Test-Bereich</h2>
+    <p>Hier können später deine Funktionen hin. Aktuell ein paar Test-Buttons:</p>
+
+    <button class="btn">Kunden öffnen (später)</button>
+    <button class="btn">Mitarbeiter öffnen (später)</button>
+    <button class="btn">Einstellungen (später)</button>
+
+    <div id="info"></div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const SUPABASE_URL = 'https://ipitjuyeplkaywatmnxg.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaXRqdXllcGxrYXl3YXRtbnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNTU3NjEsImV4cCI6MjA3ODYzMTc2MX0.JZ71lI049-_Z0bJvXIyIOoMFNR_Cgg7wLgbuOEsXCec';
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const infoBox = document.getElementById('info');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    function showInfo(text) {
+      infoBox.textContent = text;
+    }
+
+    // Prüfen, ob der Nutzer eingeloggt ist
+    (async () => {
+      const { data, error } = await supabase.auth.getSession();
+
+      if (error || !data.session) {
+        // Nicht eingeloggt -> zurück zum Login
+        window.location.href = '/login/';
+        return;
+      }
+
+      const user = data.session.user;
+      showInfo('Eingeloggt als: ' + (user.email || 'Unbekannt'));
+    })();
+
+    // Logout
+    logoutBtn.addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      window.location.href = '/login/';
+    });
+  </script>
+</body>
+</html>
 
