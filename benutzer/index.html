@@ -258,7 +258,7 @@
           }
 
           // EDGE FUNCTION: erstellt auth-User + benutzer-Eintrag
-          const res = await fetch(supabaseUrl + '/functions/v1/admin-create-user', {
+          const res = await fetch(supabaseUrl + '/functions/v1/superadmin_user_anlegen', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
