@@ -310,10 +310,20 @@
       }
     });
 
-    // Seite starten
-    (async () => {
-      await loadBenutzer();
-    })();
+    // Seite starten: erst Session prüfen, dann laden
+(async () => {
+  const { data, error } = await supabaseClient.auth.getSession();
+
+  if (error || !data.session) {
+    // nicht eingeloggt -> auf Login-Seite schicken
+    alert('Bitte zuerst einloggen.');
+    window.location.href = 'login.html'; // ggf. Namen der Login-Datei anpassen
+    return;
+  }
+
+  await loadBenutzer();
+})();
+
     
     // Realtime aktivieren
 supabaseClient
