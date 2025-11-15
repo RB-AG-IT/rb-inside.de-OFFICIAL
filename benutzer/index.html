@@ -43,11 +43,31 @@
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    async function checkSession() {
+      const msg = document.getElementById("message");
+      const { data, error } = await supabase.auth.getUser();
+
+      console.log("getUser data:", data);
+      console.log("getUser error:", error);
+
+      if (error || !data.user) {
+        msg.textContent = "Nicht eingeloggt oder keine gültige Sitzung.";
+        // Optional: zur Login-Seite leiten
+        // window.location.href = "/login/";
+        return null;
+      }
+
+      return data.user;
+    }
+
     async function loadBenutzer() {
       const tbody = document.getElementById("userTableBody");
       const msg = document.getElementById("message");
       tbody.innerHTML = "";
       msg.textContent = "";
+
+      const user = await checkSession();
+      if (!user) return;
 
       const { data, error } = await supabase
         .from("benutzer")
@@ -63,18 +83,18 @@
       }
 
       if (!data || data.length === 0) {
-        msg.textContent = "Keine Benutzer gefunden.";
+        msg.textContent = "Keine Benutzer gefunden (oder keine Berechtigung).";
         return;
       }
 
-      data.forEach((user) => {
+      data.forEach((u) => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${user.vorname || ""}</td>
-          <td>${user.nachname || ""}</td>
-          <td>${user.email || ""}</td>
-          <td>${user.rolle || ""}</td>
-          <td><button data-id="${user.id}">Details</button></td>
+          <td>${u.vorname || ""}</td>
+          <td>${u.nachname || ""}</td>
+          <td>${u.email || ""}</td>
+          <td>${u.rolle || ""}</td>
+          <td><button data-id="${u.id}">Details</button></td>
         `;
         tbody.appendChild(tr);
       });
