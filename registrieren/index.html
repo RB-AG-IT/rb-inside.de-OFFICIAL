@@ -101,27 +101,27 @@
 
     <h2>Registrieren</h2>
 
-    <form id="register-form">
+    <form id="signup-form">
       <div class="field">
-        <label for="reg-email">E-Mail</label>
-        <input type="email" id="reg-email" required>
+        <label for="name">Name</label>
+        <input type="text" id="name" required>
       </div>
 
       <div class="field">
-        <label for="reg-password">Passwort</label>
-        <input type="password" id="reg-password" required>
+        <label for="email">E-Mail</label>
+        <input type="email" id="email" required>
       </div>
 
       <div class="field">
-        <label for="reg-password2">Passwort wiederholen</label>
-        <input type="password" id="reg-password2" required>
+        <label for="password">Passwort</label>
+        <input type="password" id="password" required>
       </div>
 
       <button type="submit" class="btn-primary">Konto erstellen</button>
     </form>
 
     <p class="small-text">
-      Schon ein Konto?
+      Bereits ein Konto?
       <a href="/login/">Zum Login</a>
     </p>
 
@@ -132,9 +132,10 @@
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
     const SUPABASE_URL = 'https://ipitjuyeplkaywatmnxg.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaXRqdXllcGxrYXl3YXRtbnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNTU3NjEsImV4cCI6MjA3ODYzMTc2MX0.JZ71lI049-_Z0bJvXIyIOoMFNR_Cgg7wLgbuOEsXCec';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaXRqdXllcGxrYXl3YXRtbnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNTU3NjEsImV4cCI6MjA3ODYzMTc2MX0.JZ71lI049-_Z0bJvXIyIOoMFNR_Cgg7WlgbuOEsXCec';
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const form = document.getElementById('signup-form');
     const messageBox = document.getElementById('message');
 
     function showMessage(text, isError = false) {
@@ -145,47 +146,40 @@
       }
     }
 
-    const registerForm = document.getElementById('register-form');
-
-    registerForm.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       showMessage('Bitte warten...', false);
 
-      const email = document.getElementById('reg-email').value.trim();
-      const password = document.getElementById('reg-password').value;
-      const password2 = document.getElementById('reg-password2').value;
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
 
-      if (password !== password2) {
-        showMessage('Die Passwörter stimmen nicht überein.<br><small>Bitte erneut eingeben.</small>', true);
+      if (!name || !email || !password) {
+        showMessage('Bitte alle Felder ausfüllen.', true);
         return;
       }
 
       const { data, error } = await supabase.auth.signUp({
         email,
-        password
+        password,
+        options: {
+          data: { name },
+          // HIER wird die Registrierungsbestätigungs-Seite gesetzt:
+          emailRedirectTo: 'https://rb-inside.de/registrieren/registrierung-bestätigt.html'
+        }
       });
 
       if (error) {
-        let msg = error.message || 'Registrierung fehlgeschlagen';
-
-        if (msg.toLowerCase().includes('password')) {
-          msg = 'Das Passwort erfüllt nicht die Anforderungen.<br><small>Bitte ein stärkeres Passwort wählen.</small>';
-        }
-
-        if (msg.toLowerCase().includes('user already registered')) {
-          msg = 'Diese E-Mail ist bereits registriert.<br><small>Bitte nutze eine andere oder logge dich ein.</small>';
-        }
-
-        showMessage(msg, true);
+        showMessage(error.message || 'Fehler bei der Registrierung.', true);
         return;
       }
 
-      showMessage('Registrierung erfolgreich!<br><small>Bitte bestätige deine E-Mail-Adresse über den Link im Postfach.</small>', false);
-
-      setTimeout(() => {
-        window.location.href = '/login/';
-      }, 15000);
+      showMessage(
+        'Konto angelegt.<br><small>Bitte E-Mail prüfen und Bestätigungslink anklicken.</small>',
+        false
+      );
     });
   </script>
+
 </body>
 </html>
