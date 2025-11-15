@@ -111,3 +111,116 @@
   </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Benutzer - RB-INSIDE</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, sans-serif; background: #f3f3ff; }
+    .layout { max-width: 1000px; margin: 40px auto; background: #fff; padding: 20px; border-radius: 8px; }
+    h1 { margin-top: 0; }
+    #message { margin: 10px 0; color: red; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 8px 10px; border-bottom: 1px solid #ddd; text-align: left; }
+    th { background: #151a2b; color: #fff; }
+    tr:nth-child(even) { background: #f7f7ff; }
+    button { padding: 4px 10px; border: none; border-radius: 4px; cursor: pointer; background: #151a2b; color: #fff; }
+    button:hover { opacity: 0.9; }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <h1>Benutzerübersicht</h1>
+    <div id="message"></div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Vorname</th>
+          <th>Nachname</th>
+          <th>E-Mail</th>
+          <th>Rolle</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody id="userTableBody"></tbody>
+    </table>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://ipitjuyeplkaywatmnxg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaXRqdXllcGxrYXl3YXRtbnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNTU3NjEsImV4cCI6MjA3ODYzMTc2MX0.JZ71lI049-_Z0bJvXIyIOoMFNR_Cgg7wLgbuOEsXCec";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function checkSession() {
+      const msg = document.getElementById("message");
+      const { data, error } = await supabase.auth.getUser();
+
+      console.log("getUser data:", data);
+      console.log("getUser error:", error);
+
+      if (error || !data.user) {
+        msg.textContent = "Nicht eingeloggt oder keine gültige Sitzung.";
+        // Optional: zur Login-Seite leiten
+        // window.location.href = "/login/";
+        return null;
+      }
+
+      return data.user;
+    }
+
+    async function loadBenutzer() {
+      const tbody = document.getElementById("userTableBody");
+      const msg = document.getElementById("message");
+      tbody.innerHTML = "";
+      msg.textContent = "";
+
+      const user = await checkSession();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("benutzer")
+        .select("id, vorname, nachname, email, rolle, created_at")
+        .order("created_at", { ascending: true });
+
+      console.log("benutzer data:", data);
+      console.log("benutzer error:", error);
+
+      if (error) {
+        msg.textContent = "Fehler beim Laden: " + error.message;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        msg.textContent = "Keine Benutzer gefunden (oder keine Berechtigung).";
+        return;
+      }
+
+      data.forEach((u) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${u.vorname || ""}</td>
+          <td>${u.nachname || ""}</td>
+          <td>${u.email || ""}</td>
+          <td>${u.rolle || ""}</td>
+          <td><button data-id="${u.id}">Details</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      tbody.addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          const id = e.target.getAttribute("data-id");
+          window.location.href = "benutzer-details.html?id=" + encodeURIComponent(id);
+        }
+      }, { once: true });
+    }
+
+    document.addEventListener("DOMContentLoaded", loadBenutzer);
+  </script>
+</body>
+</html>
