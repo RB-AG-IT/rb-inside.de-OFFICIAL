@@ -4,106 +4,178 @@
   <meta charset="UTF-8">
   <title>Dashboard - RB-INSIDE</title>
   <style>
+    * { box-sizing: border-box; }
     body {
+      margin: 0;
       font-family: Arial, sans-serif;
       background: #f3f3ff;
+      color: #222;
+    }
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      background: #151a2b;
+      color: #fff;
+      padding: 16px 0;
+      transition: width 0.2s;
+      overflow: hidden;
+    }
+    .sidebar.collapsed {
+      width: 70px;
+    }
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 8px;
+    }
+    .sidebar-title {
+      font-size: 16px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+    .toggle-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .nav {
+      list-style: none;
+      padding: 0;
       margin: 0;
-      padding: 20px;
+    }
+    .nav-item a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      text-decoration: none;
+      color: #cfd2ff;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    .nav-item a:hover,
+    .nav-item a.active {
+      background: #252c46;
+      color: #ffffff;
+    }
+    .nav-icon {
+      width: 22px;
+      text-align: center;
+      font-size: 16px;
+    }
+    .sidebar.collapsed .nav-text {
+      display: none;
+    }
+    .sidebar.collapsed .sidebar-title {
+      display: none;
+    }
+
+    /* Hauptbereich */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
     }
     .topbar {
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
       background: #ffffff;
-      padding: 10px 16px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
-      margin-bottom: 20px;
+      border-bottom: 1px solid #ddd;
     }
-    .topbar h1 {
-      font-size: 20px;
-      margin: 0;
+    .topbar-title {
+      font-size: 18px;
+      font-weight: bold;
     }
-    .content {
-      background: #ffffff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
-    }
-    button {
-      padding: 8px 12px;
-      border-radius: 4px;
+    .account-button {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
       border: none;
+      background: #4c56ff;
+      color: #fff;
+      font-weight: bold;
       cursor: pointer;
-      font-size: 14px;
-      margin-right: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
     }
-    .btn-logout {
-      background: #e74c3c;
-      color: #fff;
+
+    .content {
+      padding: 20px;
     }
-    .btn {
-      background: #4b6cff;
-      color: #fff;
-    }
-    #info {
-      margin-top: 10px;
-      font-size: 13px;
-      color: #555;
+    .empty-box {
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      text-align: center;
+      color: #666;
     }
   </style>
 </head>
 <body>
-  <div class="topbar">
-    <h1>RB-INSIDE Dashboard</h1>
-    <div>
-      <button class="btn-logout" id="logout-btn">Logout</button>
+  <div class="layout">
+    <!-- Seitenleiste -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">RB-INSIDE</div>
+        <button class="toggle-btn" id="toggleSidebar" aria-label="Menü umschalten">☰</button>
+      </div>
+      <ul class="nav">
+        <li class="nav-item">
+          <a href="dashboard.html" class="active">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-text">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="benutzer.html">
+            <span class="nav-icon">👥</span>
+            <span class="nav-text">Benutzer</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- Hauptbereich -->
+    <div class="main">
+      <header class="topbar">
+        <div class="topbar-title">Dashboard</div>
+        <!-- Account-Button oben rechts -->
+        <a href="account.html" class="account-button" title="Mein Account">
+          <span>A</span>
+        </a>
+      </header>
+
+      <main class="content">
+        <div class="empty-box">
+          <h2>Dashboard</h2>
+          <p>Hier kommen später deine Auswertungen, Statistiken und Kacheln hin.</p>
+        </div>
+      </main>
     </div>
   </div>
 
-  <div class="content">
-    <h2>Test-Bereich</h2>
-    <p>Hier können später deine Funktionen hin. Aktuell ein paar Test-Buttons:</p>
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const toggleSidebar = document.getElementById('toggleSidebar');
 
-    <button class="btn">Kunden öffnen (später)</button>
-    <button class="btn">Mitarbeiter öffnen (später)</button>
-    <button class="btn">Einstellungen (später)</button>
-
-    <div id="info"></div>
-  </div>
-
-  <script type="module">
-    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-    const SUPABASE_URL = 'https://ipitjuyeplkaywatmnxg.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaXRqdXllcGxrYXl3YXRtbnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNTU3NjEsImV4cCI6MjA3ODYzMTc2MX0.JZ71lI049-_Z0bJvXIyIOoMFNR_Cgg7wLgbuOEsXCec';
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const infoBox = document.getElementById('info');
-    const logoutBtn = document.getElementById('logout-btn');
-
-    function showInfo(text) {
-      infoBox.textContent = text;
-    }
-
-    // Prüfen, ob der Nutzer eingeloggt ist
-    (async () => {
-      const { data, error } = await supabase.auth.getSession();
-
-      if (error || !data.session) {
-        // Nicht eingeloggt -> zurück zum Login
-        window.location.href = '/login/';
-        return;
-      }
-
-      const user = data.session.user;
-      showInfo('Eingeloggt als: ' + (user.email || 'Unbekannt'));
-    })();
-
-    // Logout
-    logoutBtn.addEventListener('click', async () => {
-      await supabase.auth.signOut();
-      window.location.href = '/login/';
+    toggleSidebar.addEventListener('click', () => {
+      sidebar.classList.toggle('collapsed');
     });
   </script>
 </body>
