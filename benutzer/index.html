@@ -43,31 +43,27 @@
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    async function checkSession() {
-      const { data, error } = await supabase.auth.getUser();
-      if (error || !data.user) {
-        document.getElementById("message").textContent = "Nicht eingeloggt oder keine gültige Sitzung.";
-        // Wenn du automatisch zur Login-Seite willst, aktivieren:
-        // window.location.href = "/login/";
-        return false;
-      }
-      return true;
-    }
-
     async function loadBenutzer() {
-      const ok = await checkSession();
-      if (!ok) return;
-
       const tbody = document.getElementById("userTableBody");
+      const msg = document.getElementById("message");
       tbody.innerHTML = "";
+      msg.textContent = "";
 
       const { data, error } = await supabase
         .from("benutzer")
         .select("id, vorname, nachname, email, rolle, created_at")
         .order("created_at", { ascending: true });
 
+      console.log("benutzer data:", data);
+      console.log("benutzer error:", error);
+
       if (error) {
-        document.getElementById("message").textContent = "Fehler beim Laden: " + error.message;
+        msg.textContent = "Fehler beim Laden: " + error.message;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        msg.textContent = "Keine Benutzer gefunden.";
         return;
       }
 
@@ -83,7 +79,6 @@
         tbody.appendChild(tr);
       });
 
-      // Klick auf Details-Button → Detailseite (kannst du später bauen)
       tbody.addEventListener("click", (e) => {
         if (e.target.tagName === "BUTTON") {
           const id = e.target.getAttribute("data-id");
