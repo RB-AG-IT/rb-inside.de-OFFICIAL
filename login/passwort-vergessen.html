@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Passwort vergessen - RHODENBURG AG</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f3ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .auth-box {
+      background: #ffffff;
+      padding: 24px 28px;
+      border-radius: 10px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.08);
+      max-width: 360px;
+      width: 100%;
+      text-align: center;
+    }
+    h1 {
+      font-size: 26px;
+      margin: 0;
+      letter-spacing: 2px;
+      font-weight: bold;
+    }
+    .subtitle {
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 5px;
+      margin-top: 2px;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    h2 {
+      font-size: 18px;
+      margin: 6px 0 10px;
+    }
+    p.info {
+      font-size: 13px;
+      color: #555;
+      margin-top: 0;
+      margin-bottom: 18px;
+    }
+    .field {
+      margin-bottom: 12px;
+      text-align: left;
+    }
+    label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    input {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 9px 10px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn-primary {
+      background: #4b6cff;
+      color: #fff;
+      margin-top: 6px;
+    }
+    .small-text {
+      font-size: 13px;
+      margin-top: 15px;
+    }
+    a {
+      color: #4b6cff;
+      text-decoration: none;
+      font-size: 13px;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    #message {
+      margin-top: 15px;
+      font-size: 14px;
+    }
+    #message.error {
+      color: #c0392b;
+    }
+    #message.success {
+      color: #27ae60;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="auth-box">
+    <h1>RHODENBURG</h1>
+    <div class="subtitle">A K T I E N G E S E L L S C H A F T</div>
+
+    <h2>Passwort vergessen</h2>
+    <p class="info">
+      Gib deine E-Mail-Adresse ein.<br>
+      Du erhältst einen Link zum Zurücksetzen des Passworts.
+    </p>
+
+    <form id="reset-form">
+      <div class="field">
+        <label for="reset-email">E-Mail</label>
+        <input type="email" id="reset-email" required>
+      </div>
+
+      <button type="submit" class="btn-primary">Reset-Link senden</button>
+    </form>
+
+    <p class="small-text">
+      Zurück zum <a href="/login/">Login</a>
+    </p>
+
+    <div id="message"></div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const SUPABASE_URL = 'https://ipitjuyeplkaywatmnxg.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaXRqdXllcGxrYXl3YXRtbnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNTU3NjEsImV4cCI6MjA3ODYzMTc2MX0.JZ71lI049-_Z0bJvXIyIOoMFNR_Cgg7wLgbuOEsXCec';
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const messageBox = document.getElementById('message');
+
+    function showMessage(text, isError = false) {
+      messageBox.innerHTML = text;
+      messageBox.className = '';
+      if (text) {
+        messageBox.classList.add(isError ? 'error' : 'success');
+      }
+    }
+
+    const resetForm = document.getElementById('reset-form');
+
+    resetForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      showMessage('Bitte warten...', false);
+
+      const email = document.getElementById('reset-email').value.trim();
+
+      if (!email) {
+        showMessage('Bitte eine E-Mail-Adresse eingeben.', true);
+        return;
+      }
+
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+
+      if (error) {
+        let msg = error.message || 'Fehler beim Senden der E-Mail.';
+
+        if (msg.toLowerCase().includes('rate limit')) {
+          msg = 'Zu viele Anfragen.<br><small>Bitte versuche es in ein paar Minuten erneut.</small>';
+        }
+
+        showMessage(msg, true);
+        return;
+      }
+
+      showMessage(
+        'Wenn diese E-Mail bei uns existiert,<br>haben wir einen Reset-Link gesendet.',
+        false
+      );
+    });
+  </script>
+
+</body>
+</html>
