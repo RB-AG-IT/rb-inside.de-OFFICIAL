@@ -591,86 +591,93 @@
     return ok;
   }
 
-  /* --- GEOAPIFY: Autocomplete für Straße --- */
-  let strasseTimeout = null;
 
-  function clearStrasseSuggestions() {
-    strasseSuggestions.innerHTML = '';
-  }
+  
+ /* --- GEOAPIFY: Autocomplete für Straße (DE + max 5 + IP-Bias + Deutsch) --- */
+let strasseTimeout = null;
+const GEOAPIFY_API_KEY = "bbb56e4d3e5447a89b834ac1c3b8875d";
 
-  function showStrasseSuggestions(features) {
-    clearStrasseSuggestions();
-    if (!features || !features.length) return;
+function clearStrasseSuggestions() {
+  strasseSuggestions.innerHTML = "";
+}
 
-    const list = document.createElement('div');
-    list.className = 'suggestions-list';
+function showStrasseSuggestions(features) {
+  clearStrasseSuggestions();
+  if (!features || !features.length) return;
 
-    features.forEach((f) => {
-      const props = f.properties || {};
-      const item = document.createElement('div');
-      item.className = 'suggestion-item';
+  const list = document.createElement("div");
+  list.className = "suggestions-list";
 
-      const display =
-        props.formatted ||
-        [props.street, props.housenumber, props.postcode, props.city]
-          .filter(Boolean)
-          .join(' ');
+  features.forEach((f) => {
+    const p = f.properties || {};
+    const item = document.createElement("div");
+    item.className = "suggestion-item";
 
-      item.textContent = display;
+    item.textContent =
+      p.formatted ||
+      [p.street, p.housenumber, p.postcode, p.city].filter(Boolean).join(" ");
 
-      item.addEventListener('click', () => {
-        if (props.street) strasseInput.value = props.street;
-        if (props.housenumber) hausnummerInput.value = props.housenumber;
-        if (props.postcode) postleitzahlInput.value = props.postcode;
-        if (props.city) ortInput.value = props.city;
+    item.addEventListener("click", () => {
+      if (p.street) strasseInput.value = p.street;
+      if (p.housenumber) hausnummerInput.value = p.housenumber;
+      if (p.postcode) postleitzahlInput.value = p.postcode;
+      if (p.city) ortInput.value = p.city;
 
-        clearStrasseSuggestions();
-      });
-
-      list.appendChild(item);
+      clearStrasseSuggestions();
     });
 
-    strasseSuggestions.appendChild(list);
-  }
-
-  async function fetchStrasseSuggestions(text) {
-    const url =
-      'https://api.geoapify.com/v1/geocode/autocomplete?text=' +
-      encodeURIComponent(text) +
-      '&limit=6&filter=countrycode:de&apiKey=' +
-      GEOAPIFY_API_KEY;
-
-    try {
-      const res = await fetch(url);
-      if (!res.ok) return;
-      const data = await res.json();
-      showStrasseSuggestions(data.features || []);
-    } catch (e) {
-      console.error('Geoapify Fehler:', e);
-    }
-  }
-
-  strasseInput.addEventListener('input', () => {
-    const value = strasseInput.value.trim();
-
-    if (strasseTimeout) clearTimeout(strasseTimeout);
-
-    if (value.length < 3) {
-      clearStrasseSuggestions();
-      return;
-    }
-
-    strasseTimeout = setTimeout(() => {
-      fetchStrasseSuggestions(value);
-    }, 300);
+    list.appendChild(item);
   });
 
-  document.addEventListener('click', (e) => {
-    if (!strasseSuggestions.contains(e.target) && e.target !== strasseInput) {
-      clearStrasseSuggestions();
-    }
-  });
+  strasseSuggestions.appendChild(list);
+}
 
+async function fetchStrasseSuggestions(text) {
+  const url =
+    "https://api.geoapify.com/v1/geocode/autocomplete?text=" +
+    encodeURIComponent(text) +
+    "&limit=5" +
+    "&filter=countrycode:de" +
+    "&bias=ip" +
+    "&lang=de" +
+    "&apiKey=" +
+    GEOAPIFY_API_KEY;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return;
+    const data = await res.json();
+    showStrasseSuggestions(data.features || []);
+  } catch (err) {
+    console.error("Geoapify Fehler:", err);
+  }
+}
+
+strasseInput.addEventListener("input", () => {
+  const value = strasseInput.value.trim();
+
+  if (strasseTimeout) clearTimeout(strasseTimeout);
+
+  if (value.length < 3) {
+    clearStrasseSuggestions();
+    return;
+  }
+
+  strasseTimeout = setTimeout(() => {
+    fetchStrasseSuggestions(value);
+  }, 300);
+});
+
+document.addEventListener("click", (e) => {
+  if (!strasseSuggestions.contains(e.target) && e.target !== strasseInput) {
+    clearStrasseSuggestions();
+  }
+});
+
+
+
+
+  
   /* Formular speichern */
   accountForm.addEventListener('submit', async (event) => {
     event.preventDefault();
