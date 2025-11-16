@@ -613,9 +613,12 @@ function showStrasseSuggestions(features) {
     const item = document.createElement("div");
     item.className = "suggestion-item";
 
-    item.textContent =
-      p.formatted ||
-      [p.street, p.housenumber, p.postcode, p.city].filter(Boolean).join(" ");
+    item.textContent = [
+  p.street,
+  p.housenumber,
+  p.postcode,
+  p.city
+].filter(Boolean).join(" ");
 
     item.addEventListener("click", () => {
       if (p.street) strasseInput.value = p.street;
