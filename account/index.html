@@ -150,6 +150,10 @@
       color: #b00020;
       font-weight: bold;
     }
+    .small-note.success {
+      color: #008000;
+      font-weight: bold;
+    }
 
     .btn {
       padding: 9px 16px; border-radius: 6px;
@@ -299,6 +303,7 @@
             <div class="form-row">
               <label for="iban">IBAN *</label>
               <input type="text" id="iban" required>
+              <div id="ibanStatus" class="small-note"></div>
             </div>
             <div class="form-row">
               <label for="bic">BIC *</label>
@@ -361,6 +366,7 @@
   const bankInput = document.getElementById('bank');
   const ibanInput = document.getElementById('iban');
   const bicInput = document.getElementById('bic');
+  const ibanStatus = document.getElementById('ibanStatus');
 
   const steuerIdInput = document.getElementById('steuer_id');
   const ustIdInput = document.getElementById('umsatzsteuernummer');
@@ -371,6 +377,9 @@
   let currentAvatarPath = null;
   let newAvatarFile = null;
   let originalEmail = null;
+
+  let ibanValid = false;
+  let ibanCheckTimeout = null;
 
   /* --- kleine Hilfsfunktionen --- */
   function showPopup(message) {
@@ -585,102 +594,201 @@
       }
     });
 
+    const ibanPlain = normalizeIban(ibanInput.value);
+    if (!ibanPlain || !ibanValid) {
+      ok = false;
+      setIbanStatus('Bitte gültige IBAN eingeben.', 'error');
+    }
+
     if (!ok) {
-      setStatus('Bitte alle Pflichtfelder (*) ausfüllen.', 'error');
+      setStatus('Bitte alle Pflichtfelder (*) korrekt ausfüllen.', 'error');
     }
     return ok;
   }
 
+  /* --- IBAN-Prüfung + Bank/BIC via openiban.com --- */
+  function normalizeIban(value) {
+    return (value || '').replace(/\s+/g, '').toUpperCase();
+  }
 
-  
- /* --- GEOAPIFY: Autocomplete für Straße (DE + max 5 + IP-Bias + Deutsch) --- */
-let strasseTimeout = null;
+  function isIbanChecksumValid(iban) {
+    if (!iban || iban.length < 15 || iban.length > 34) return false;
+    if (!/^[A-Z0-9]+$/.test(iban)) return false;
 
+    const rearranged = iban.slice(4) + iban.slice(0, 4);
+    let total = '';
+    for (let i = 0; i < rearranged.length; i++) {
+      const ch = rearranged[i];
+      const code = ch.charCodeAt(0);
+      if (code >= 65 && code <= 90) {
+        total += (code - 55).toString(); // A=10, B=11, ...
+      } else {
+        total += ch;
+      }
+    }
 
-function clearStrasseSuggestions() {
-  strasseSuggestions.innerHTML = "";
-}
+    let remainder = 0;
+    for (let i = 0; i < total.length; i += 7) {
+      const part = remainder.toString() + total.slice(i, i + 7);
+      remainder = parseInt(part, 10) % 97;
+    }
+    return remainder === 1;
+  }
 
-function showStrasseSuggestions(features) {
-  clearStrasseSuggestions();
-  if (!features || !features.length) return;
+  function setIbanStatus(message, type) {
+    ibanStatus.textContent = message || '';
+    ibanStatus.classList.remove('warning', 'success');
+    ibanInput.style.borderColor = '#ccc';
+    ibanValid = false;
 
-  const list = document.createElement("div");
-  list.className = "suggestions-list";
+    if (!message) return;
 
-  features.forEach((f) => {
-    const p = f.properties || {};
-    const item = document.createElement("div");
-    item.className = "suggestion-item";
+    if (type === 'error') {
+      ibanStatus.classList.add('warning');
+      ibanInput.style.borderColor = '#b00020';
+    } else if (type === 'success') {
+      ibanStatus.classList.add('success');
+      ibanInput.style.borderColor = '#008000';
+      ibanValid = true;
+    }
+  }
 
-    item.textContent = [
-  p.street,
-  p.housenumber,
-  p.postcode,
-  p.city
-].filter(Boolean).join(" ");
+  async function validateIbanAndLoadBank(ibanRaw, quiet) {
+    const iban = normalizeIban(ibanRaw);
+    if (!iban) {
+      setIbanStatus('', null);
+      return false;
+    }
 
-    item.addEventListener("click", () => {
-      if (p.street) strasseInput.value = p.street;
-      if (p.housenumber) hausnummerInput.value = p.housenumber;
-      if (p.postcode) postleitzahlInput.value = p.postcode;
-      if (p.city) ortInput.value = p.city;
+    if (!isIbanChecksumValid(iban)) {
+      if (!quiet) setIbanStatus('IBAN ist ungültig.', 'error');
+      return false;
+    }
 
-      clearStrasseSuggestions();
-    });
+    try {
+      const res = await fetch(`https://openiban.com/validate/${iban}?getBIC=true&validateBankCode=true`);
+      if (!res.ok) {
+        if (!quiet) setIbanStatus('IBAN konnte gerade nicht geprüft werden.', 'error');
+        return false;
+      }
+      const data = await res.json();
+      if (!data.valid) {
+        if (!quiet) setIbanStatus('IBAN ist ungültig.', 'error');
+        return false;
+      }
 
-    list.appendChild(item);
+      setIbanStatus('IBAN ist gültig.', 'success');
+
+      if (data.bankData) {
+        if (data.bankData.name) bankInput.value = data.bankData.name;
+        if (data.bankData.bic) bicInput.value = data.bankData.bic;
+      }
+      return true;
+    } catch (err) {
+      console.error('IBAN-Prüfung Fehler:', err);
+      if (!quiet) setIbanStatus('IBAN konnte gerade nicht geprüft werden.', 'error');
+      return false;
+    }
+  }
+
+  ibanInput.addEventListener('input', () => {
+    const value = ibanInput.value;
+
+    if (ibanCheckTimeout) clearTimeout(ibanCheckTimeout);
+
+    if (!value.trim()) {
+      setIbanStatus('', null);
+      return;
+    }
+
+    ibanCheckTimeout = setTimeout(() => {
+      validateIbanAndLoadBank(value, false);
+    }, 500);
   });
 
-  strasseSuggestions.appendChild(list);
-}
+  /* --- GEOAPIFY: Autocomplete für Straße (DE + max 5 + IP-Bias + Deutsch) --- */
+  let strasseTimeout = null;
 
-async function fetchStrasseSuggestions(text) {
-  const url =
-    "https://api.geoapify.com/v1/geocode/autocomplete?text=" +
-    encodeURIComponent(text) +
-    "&limit=5" +
-    "&filter=countrycode:de" +
-    "&bias=ip" +
-    "&lang=de" +
-    "&apiKey=" +
-    GEOAPIFY_API_KEY;
-
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return;
-    const data = await res.json();
-    showStrasseSuggestions(data.features || []);
-  } catch (err) {
-    console.error("Geoapify Fehler:", err);
+  function clearStrasseSuggestions() {
+    strasseSuggestions.innerHTML = "";
   }
-}
 
-strasseInput.addEventListener("input", () => {
-  const value = strasseInput.value.trim();
-
-  if (strasseTimeout) clearTimeout(strasseTimeout);
-
-  if (value.length < 3) {
+  function showStrasseSuggestions(features) {
     clearStrasseSuggestions();
-    return;
+    if (!features || !features.length) return;
+
+    const list = document.createElement("div");
+    list.className = "suggestions-list";
+
+    features.forEach((f) => {
+      const p = f.properties || {};
+      const item = document.createElement("div");
+      item.className = "suggestion-item";
+
+      item.textContent = [
+        p.street,
+        p.housenumber,
+        p.postcode,
+        p.city
+      ].filter(Boolean).join(" ");
+
+      item.addEventListener("click", () => {
+        if (p.street) strasseInput.value = p.street;
+        if (p.housenumber) hausnummerInput.value = p.housenumber;
+        if (p.postcode) postleitzahlInput.value = p.postcode;
+        if (p.city) ortInput.value = p.city;
+
+        clearStrasseSuggestions();
+      });
+
+      list.appendChild(item);
+    });
+
+    strasseSuggestions.appendChild(list);
   }
 
-  strasseTimeout = setTimeout(() => {
-    fetchStrasseSuggestions(value);
-  }, 300);
-});
+  async function fetchStrasseSuggestions(text) {
+    const url =
+      "https://api.geoapify.com/v1/geocode/autocomplete?text=" +
+      encodeURIComponent(text) +
+      "&limit=5" +
+      "&filter=countrycode:de" +
+      "&bias=ip" +
+      "&lang=de" +
+      "&apiKey=" +
+      GEOAPIFY_API_KEY;
 
-document.addEventListener("click", (e) => {
-  if (!strasseSuggestions.contains(e.target) && e.target !== strasseInput) {
-    clearStrasseSuggestions();
+    try {
+      const res = await fetch(url);
+      if (!res.ok) return;
+      const data = await res.json();
+      showStrasseSuggestions(data.features || []);
+    } catch (err) {
+      console.error("Geoapify Fehler:", err);
+    }
   }
-});
 
+  strasseInput.addEventListener("input", () => {
+    const value = strasseInput.value.trim();
 
+    if (strasseTimeout) clearTimeout(strasseTimeout);
 
+    if (value.length < 3) {
+      clearStrasseSuggestions();
+      return;
+    }
 
-  
+    strasseTimeout = setTimeout(() => {
+      fetchStrasseSuggestions(value);
+    }, 300);
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!strasseSuggestions.contains(e.target) && e.target !== strasseInput) {
+      clearStrasseSuggestions();
+    }
+  });
+
   /* Formular speichern */
   accountForm.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -690,6 +798,12 @@ document.addEventListener("click", (e) => {
     }
 
     if (!validateRequiredFields()) return;
+
+    const ibanOk = await validateIbanAndLoadBank(ibanInput.value, false);
+    if (!ibanOk) {
+      setStatus('Bitte eine gültige IBAN eingeben.', 'error');
+      return;
+    }
 
     setStatus('Speichere Daten...', null);
 
@@ -725,7 +839,7 @@ document.addEventListener("click", (e) => {
       postleitzahl: postleitzahlInput.value.trim(),
       ort: ortInput.value.trim(),
       bank: bankInput.value.trim(),
-      iban: ibanInput.value.trim(),
+      iban: normalizeIban(ibanInput.value),
       bic: bicInput.value.trim(),
       steuer_id: steuerIdInput.value.trim() || null,
       umsatzsteuernummer: ustIdInput.value.trim() || null,
