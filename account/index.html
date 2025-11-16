@@ -5,10 +5,11 @@
   <title>Mein Account - RB-INSIDE</title>
   <style>
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: Arial; background: #f3f3ff; }
+    body { margin: 0; font-family: Arial, sans-serif; background: #f3f3ff; }
 
     .layout { display: flex; min-height: 100vh; }
 
+    /* SIDEBAR */
     .sidebar {
       width: 220px; background: #151a2b; color: #fff;
       padding: 16px 0; transition: 0.2s;
@@ -24,7 +25,6 @@
       background: none; border: none; color: #fff;
       font-size: 20px; cursor: pointer;
     }
-
     .nav { list-style: none; padding: 0; margin: 0; }
     .nav-item a {
       display: flex; gap: 10px;
@@ -70,6 +70,7 @@
       color: #fff;
     }
 
+    /* HAUPTBEREICH */
     .main { flex: 1; display: flex; flex-direction: column; }
 
     .topbar {
@@ -77,84 +78,114 @@
       background: #fff; padding: 12px 20px; border-bottom: 1px solid #ddd;
     }
 
-    .user-menu-wrapper { position: relative; }
-    .account-button {
-      width: 38px; height: 38px; border-radius: 50%;
-      display: flex; justify-content: center; align-items: center;
-      background: #4c56ff; color: #fff;
-      border: none; cursor: pointer;
-      font-weight: bold;
-    }
-    .user-menu {
-      position: absolute;
-      right: 0;
-      top: 46px;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-      min-width: 140px;
-      padding: 6px 0;
-      display: none;
-      z-index: 50;
-    }
-    .user-menu a,
-    .user-menu button {
-      display: block;
-      width: 100%;
-      padding: 8px 14px;
-      text-align: left;
-      border: none;
-      background: none;
-      font-size: 14px;
-      cursor: pointer;
-      text-decoration: none;
-      color: #222;
-    }
-    .user-menu a:hover,
-    .user-menu button:hover {
-      background: #f3f3ff;
-    }
-
     .content { padding: 20px; }
 
     .card {
       background: #fff; border-radius: 10px; padding: 20px;
-      max-width: 560px; box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      max-width: 800px; margin: 0 auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
     }
 
-    h2 { margin-top: 0; }
-
-    .avatar-wrapper { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; }
+    .profile-header {
+      display: flex; gap: 20px; align-items: center; margin-bottom: 20px;
+    }
     .avatar-box {
       width: 120px; height: 120px;
-      border-radius: 12px; border: 2px dashed #b0b4ff;
+      border-radius: 50%;
+      border: 2px solid #b0b4ff;
       background: #e6e7ff;
       background-size: cover; background-position: center;
       display: flex; justify-content: center; align-items: center;
       font-size: 12px; color: #555;
+      position: relative;
+      overflow: hidden;
+    }
+    .avatar-upload-label {
+      position: absolute;
+      bottom: 6px;
+      right: 6px;
+      background: #151a2b;
+      color: #fff;
+      font-size: 10px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    #avatarInput { display: none; }
+
+    .profile-name-block h2 {
+      margin: 0 0 4px; font-size: 22px;
+    }
+    .profile-name-block span {
+      font-size: 13px; color: #666;
     }
 
-    .form-row { margin-bottom: 12px; }
-    label { display: block; font-size: 13px; margin-bottom: 4px; }
-    input[type="text"], input[type="email"], textarea {
+    .section-title {
+      font-weight: bold;
+      margin: 18px 0 8px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 4px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px 16px;
+    }
+    .form-row { margin-bottom: 12px; display: flex; flex-direction: column; }
+    label { font-size: 13px; margin-bottom: 4px; }
+    input[type="text"],
+    input[type="email"],
+    input[type="date"] {
       width: 100%; padding: 8px;
       border-radius: 4px; border: 1px solid #ccc; font-size: 14px;
     }
-    textarea { min-height: 70px; }
+
+    .small-note {
+      font-size: 11px;
+      color: #777;
+      margin-top: 2px;
+    }
+    .small-note.warning {
+      color: #b00020;
+      font-weight: bold;
+    }
 
     .btn {
-      padding: 8px 14px; border-radius: 6px;
+      padding: 9px 16px; border-radius: 6px;
       border: none; font-size: 14px; cursor: pointer;
     }
     .btn-primary { background: #4c56ff; color: #fff; }
 
     .status { margin-top: 10px; font-size: 13px; }
+    .status.error { color: #b00020; }
+    .status.success { color: #008000; }
+
+    .popup {
+      position: fixed;
+      left: 50%;
+      top: 20px;
+      transform: translateX(-50%);
+      background: #151a2b;
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 999;
+    }
+    .popup.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
   </style>
 </head>
 <body>
 
 <div class="layout">
-
+  <!-- Sidebar wird aus externer Datei geladen -->
   <aside id="sidebar" class="sidebar"></aside>
 
   <div class="main">
@@ -165,133 +196,170 @@
 
     <main class="content">
       <div class="card">
-        <h2>Persönliche Daten</h2>
-
-        <div class="avatar-wrapper">
+        <div class="profile-header">
           <div id="avatarPreview" class="avatar-box">
             Bild hochladen
+            <label for="avatarInput" class="avatar-upload-label">Ändern</label>
           </div>
-          <div>
-            <label for="avatarInput">Profilbild:</label>
-            <input type="file" id="avatarInput" accept="image/*">
+          <input type="file" id="avatarInput" accept="image/*">
+
+          <div class="profile-name-block">
+            <h2 id="displayName">Dein Name</h2>
+            <span>Persönliche Account-Daten</span>
           </div>
         </div>
 
         <form id="accountForm">
-          <div class="form-row">
-            <label for="fullName">Vollständiger Name</label>
-            <input type="text" id="fullName" required>
-          </div>
-          <div class="form-row">
-            <label for="email">E-Mail (nur Anzeige)</label>
-            <input type="email" id="email" disabled>
-          </div>
-          <div class="form-row">
-            <label for="phone">Telefon</label>
-            <input type="text" id="phone">
-          </div>
-          <div class="form-row">
-            <label for="address">Adresse</label>
-            <input type="text" id="address">
-          </div>
-          <div class="form-row">
-            <label for="about">Über mich</label>
-            <textarea id="about"></textarea>
+          <!-- Persönliche Daten inkl. E-Mail -->
+          <div class="section-title">Persönliche Daten</div>
+          <div class="form-grid">
+            <div class="form-row">
+              <label for="vorname">Vorname *</label>
+              <input type="text" id="vorname" required>
+            </div>
+            <div class="form-row">
+              <label for="nachname">Nachname *</label>
+              <input type="text" id="nachname" required>
+            </div>
+            <div class="form-row">
+              <label for="geburtsdatum">Geburtsdatum *</label>
+              <input type="date" id="geburtsdatum" required>
+            </div>
+            <div class="form-row">
+              <label for="telefon">Telefon *</label>
+              <input type="text" id="telefon" required>
+            </div>
+            <div class="form-row">
+              <label for="email">E-Mail (Login) *</label>
+              <input type="email" id="email" required>
+              <div id="emailStatusNote" class="small-note"></div>
+            </div>
           </div>
 
-          <button type="submit" class="btn btn-primary">Speichern</button>
-          <div id="status" class="status"></div>
+          <!-- Adresse -->
+          <div class="section-title">Adresse</div>
+          <div class="form-grid">
+            <div class="form-row">
+              <label for="strasse">Straße *</label>
+              <input type="text" id="strasse" required>
+            </div>
+            <div class="form-row">
+              <label for="hausnummer">Hausnummer *</label>
+              <input type="text" id="hausnummer" required>
+            </div>
+            <div class="form-row">
+              <label for="postleitzahl">Postleitzahl *</label>
+              <input type="text" id="postleitzahl" required>
+            </div>
+            <div class="form-row">
+              <label for="ort">Ort *</label>
+              <input type="text" id="ort" required>
+            </div>
+          </div>
+
+          <!-- Bankdaten -->
+          <div class="section-title">Bankdaten</div>
+          <div class="form-grid">
+            <div class="form-row">
+              <label for="bank">Bank *</label>
+              <input type="text" id="bank" required>
+            </div>
+            <div class="form-row">
+              <label for="iban">IBAN *</label>
+              <input type="text" id="iban" required>
+            </div>
+            <div class="form-row">
+              <label for="bic">BIC *</label>
+              <input type="text" id="bic" required>
+            </div>
+          </div>
+
+          <!-- Steuerdaten (optional) -->
+          <div class="section-title">Steuerdaten (optional)</div>
+          <div class="form-grid">
+            <div class="form-row">
+              <label for="steuer_id">Steuer-ID</label>
+              <input type="text" id="steuer_id">
+            </div>
+            <div class="form-row">
+              <label for="umsatzsteuernummer">Umsatzsteuernummer</label>
+              <input type="text" id="umsatzsteuernummer">
+            </div>
+          </div>
+
+          <div class="form-row" style="margin-top:16px;">
+            <button type="submit" class="btn btn-primary">Daten speichern</button>
+            <div id="status" class="status"></div>
+          </div>
         </form>
       </div>
     </main>
   </div>
 </div>
 
+<div id="popup" class="popup">Hinweis</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   const supabaseUrl = 'https://ipitjuyeplkaywatmnxg.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaXRqdXllcGxrYXl3YXRtbnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNTU3NjEsImV4cCI6MjA3ODYzMTc2MX0.JZ71lI049-_Z0bJvXIyIOoMFNR_Cgg7LgbuOEsXCec';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaXRqdXllcGxrYXl3YXRtbnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNTU3NjEsImV4cCI6MjA3ODYzMTc2MX0.JZ71lI049-_Z0bJvXIyIOoMFNR_Cgg7wLgbuOEsXCec';
   const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
   const avatarPreview = document.getElementById('avatarPreview');
   const avatarInput = document.getElementById('avatarInput');
   const accountForm = document.getElementById('accountForm');
   const statusEl = document.getElementById('status');
+  const popupEl = document.getElementById('popup');
 
-  const fullNameInput = document.getElementById('fullName');
+  const vornameInput = document.getElementById('vorname');
+  const nachnameInput = document.getElementById('nachname');
+  const geburtsdatumInput = document.getElementById('geburtsdatum');
+  const telefonInput = document.getElementById('telefon');
   const emailInput = document.getElementById('email');
-  const phoneInput = document.getElementById('phone');
-  const addressInput = document.getElementById('address');
-  const aboutInput = document.getElementById('about');
+  const emailStatusNote = document.getElementById('emailStatusNote');
+
+  const strasseInput = document.getElementById('strasse');
+  const hausnummerInput = document.getElementById('hausnummer');
+  const postleitzahlInput = document.getElementById('postleitzahl');
+  const ortInput = document.getElementById('ort');
+
+  const bankInput = document.getElementById('bank');
+  const ibanInput = document.getElementById('iban');
+  const bicInput = document.getElementById('bic');
+
+  const steuerIdInput = document.getElementById('steuer_id');
+  const ustIdInput = document.getElementById('umsatzsteuernummer');
+
+  const displayName = document.getElementById('displayName');
 
   let currentUser = null;
   let currentAvatarPath = null;
   let newAvatarFile = null;
+  let originalEmail = null;
 
-  // Sidebar laden
-  fetch('/components/sidebar.html')
-    .then(res => res.text())
-    .then(html => {
-      const sidebar = document.getElementById('sidebar');
-      sidebar.innerHTML = html;
+  /* --- kleine Hilfsfunktionen --- */
+  function showPopup(message) {
+    popupEl.textContent = message;
+    popupEl.classList.add('show');
+    setTimeout(() => popupEl.classList.remove('show'), 3500);
+  }
 
-      const toggleSidebar = document.getElementById('toggleSidebar');
-      const footerToggle = document.getElementById('sidebarFooterToggle');
-      const footerMenu = document.getElementById('sidebarFooterMenu');
+  function setStatus(message, type) {
+    statusEl.textContent = message || '';
+    statusEl.className = 'status';
+    if (type) statusEl.classList.add(type);
+  }
 
-      toggleSidebar.addEventListener('click', () => {
-        sidebar.classList.toggle('collapsed');
-      });
+  function updateDisplayName() {
+    const v = vornameInput.value.trim();
+    const n = nachnameInput.value.trim();
+    const full = (v + ' ' + n).trim();
+    displayName.textContent = full || 'Dein Name';
+  }
 
-      footerToggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        footerMenu.style.display = footerMenu.style.display === 'flex' ? 'none' : 'flex';
-      });
+  vornameInput.addEventListener('input', updateDisplayName);
+  nachnameInput.addEventListener('input', updateDisplayName);
 
-      document.addEventListener('click', () => {
-        footerMenu.style.display = 'none';
-      });
-
-      const path = window.location.pathname;
-      sidebar.querySelectorAll('.nav a').forEach(link => {
-        const page = link.getAttribute('data-page');
-        if (path.includes('/account/') && page === 'account') {
-          link.classList.add('active');
-        }
-      });
-    });
-
-  // User-Menü laden
-  fetch('/components/user-menu.html')
-    .then(res => res.text())
-    .then(html => {
-      const container = document.getElementById('userMenuContainer');
-      container.innerHTML = html;
-
-      const accountButton = container.querySelector('#accountButton');
-      const userMenu = container.querySelector('#userMenu');
-      const logoutButton = container.querySelector('#logoutButton');
-
-      accountButton.addEventListener('click', (event) => {
-        event.stopPropagation();
-        userMenu.style.display = userMenu.style.display === 'block' ? 'none' : 'block';
-      });
-
-      document.addEventListener('click', () => {
-        userMenu.style.display = 'none';
-      });
-
-      logoutButton.addEventListener('click', async () => {
-        try {
-          await supabaseClient.auth.signOut();
-        } catch (e) {
-          console.error(e);
-        }
-        window.location.href = '/login/index.html';
-      });
-    });
-
-  // Bildvorschau
   avatarInput.addEventListener('change', (event) => {
     const file = event.target.files[0];
     if (!file) {
@@ -307,18 +375,104 @@
     reader.readAsDataURL(file);
   });
 
+  /* Sidebar laden */
+  fetch('/components/sidebar.html')
+    .then(res => res.text())
+    .then(html => {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.innerHTML = html;
+
+      const toggleSidebar = sidebar.querySelector('#toggleSidebar');
+      const footerToggle = sidebar.querySelector('#sidebarFooterToggle');
+      const footerMenu = sidebar.querySelector('#sidebarFooterMenu');
+
+      if (toggleSidebar) {
+        toggleSidebar.addEventListener('click', () => {
+          sidebar.classList.toggle('collapsed');
+        });
+      }
+
+      if (footerToggle && footerMenu) {
+        footerToggle.addEventListener('click', (e) => {
+          e.stopPropagation();
+          footerMenu.style.display = footerMenu.style.display === 'flex' ? 'none' : 'flex';
+        });
+
+        document.addEventListener('click', () => {
+          footerMenu.style.display = 'none';
+        });
+      }
+
+      const path = window.location.pathname;
+      sidebar.querySelectorAll('.nav a').forEach(link => {
+        const page = link.getAttribute('data-page');
+        if (path.includes('/account') && page === 'account') {
+          link.classList.add('active');
+        }
+      });
+    })
+    .catch(err => console.error('Sidebar Fehler:', err));
+
+  /* User-Menü laden */
+  fetch('/components/user-menu.html')
+    .then(res => res.text())
+    .then(html => {
+      const container = document.getElementById('userMenuContainer');
+      container.innerHTML = html;
+
+      const accountButton = container.querySelector('#accountButton');
+      const userMenu = container.querySelector('#userMenu');
+      const logoutButton = container.querySelector('#logoutButton');
+
+      if (accountButton && userMenu) {
+        accountButton.addEventListener('click', (event) => {
+          event.stopPropagation();
+          userMenu.style.display = userMenu.style.display === 'block' ? 'none' : 'block';
+        });
+        document.addEventListener('click', () => {
+          userMenu.style.display = 'none';
+        });
+      }
+
+      if (logoutButton) {
+        logoutButton.addEventListener('click', async () => {
+          try {
+            await supabaseClient.auth.signOut();
+          } catch (e) {
+            console.error(e);
+          }
+          window.location.href = 'https://rb-inside.de/login/';
+        });
+      }
+    })
+    .catch(err => console.error('User-Menü Fehler:', err));
+
+  /* Profil laden */
   async function loadProfile() {
-    statusEl.textContent = 'Lade Daten...';
+    setStatus('Lade Daten...', null);
 
     const { data, error } = await supabaseClient.auth.getUser();
-    if (error || !data.user) {
-      statusEl.textContent = 'Nicht eingeloggt. Bitte zuerst einloggen.';
+    if (error || !data || !data.user) {
+      // nicht eingeloggt -> Login
+      window.location.href = 'https://rb-inside.de/login/';
       return;
     }
 
     currentUser = data.user;
-    emailInput.value = currentUser.email || '';
+    originalEmail = currentUser.email || '';
+    emailInput.value = originalEmail;
 
+    // E-Mail-Status
+    const confirmed = currentUser.email_confirmed_at || currentUser.confirmed_at;
+    if (!confirmed) {
+      emailStatusNote.textContent = 'E-Mail-Bestätigung ausstehend!';
+      emailStatusNote.classList.add('warning');
+    } else {
+      emailStatusNote.textContent = '';
+      emailStatusNote.classList.remove('warning');
+    }
+
+    // Daten aus Tabelle "benutzer"
     const { data: profile, error: profileError } = await supabaseClient
       .from('benutzer')
       .select('*')
@@ -327,17 +481,31 @@
 
     if (profileError) {
       console.error(profileError);
-      statusEl.textContent = 'Fehler beim Laden des Profils.';
+      setStatus('Fehler beim Laden deiner Daten.', 'error');
       return;
     }
 
     if (profile) {
-      fullNameInput.value = profile.full_name || '';
-      phoneInput.value = profile.phone || '';
-      addressInput.value = profile.address || '';
-      aboutInput.value = profile.about || '';
-      currentAvatarPath = profile.avatar_url || null;
+      vornameInput.value = profile.vorname || '';
+      nachnameInput.value = profile.nachname || '';
+      // Datum als yyyy-mm-dd
+      if (profile.geburtsdatum) {
+        const d = new Date(profile.geburtsdatum);
+        const iso = d.toISOString().slice(0,10);
+        geburtsdatumInput.value = iso;
+      }
+      telefonInput.value = profile.telefon || '';
+      strasseInput.value = profile.strasse || '';
+      hausnummerInput.value = profile.hausnummer || '';
+      postleitzahlInput.value = profile.postleitzahl || '';
+      ortInput.value = profile.ort || '';
+      bankInput.value = profile.bank || '';
+      ibanInput.value = profile.iban || '';
+      bicInput.value = profile.bic || '';
+      steuerIdInput.value = profile.steuer_id || '';
+      ustIdInput.value = profile.umsatzsteuernummer || '';
 
+      currentAvatarPath = profile.avatar_url || null;
       if (currentAvatarPath) {
         const { data: publicData } = supabaseClient
           .storage
@@ -351,20 +519,57 @@
       }
     }
 
-    statusEl.textContent = '';
+    updateDisplayName();
+    setStatus('', null);
   }
 
+  /* Pflichtfelder prüfen */
+  function validateRequiredFields() {
+    const requiredFields = [
+      vornameInput,
+      nachnameInput,
+      geburtsdatumInput,
+      telefonInput,
+      emailInput,
+      strasseInput,
+      hausnummerInput,
+      postleitzahlInput,
+      ortInput,
+      bankInput,
+      ibanInput,
+      bicInput
+    ];
+
+    let ok = true;
+    requiredFields.forEach(input => {
+      if (!input.value.trim()) {
+        ok = false;
+        input.style.borderColor = '#b00020';
+      } else {
+        input.style.borderColor = '#ccc';
+      }
+    });
+
+    if (!ok) {
+      setStatus('Bitte alle Pflichtfelder (*) ausfüllen.', 'error');
+    }
+    return ok;
+  }
+
+  /* Formular speichern */
   accountForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (!currentUser) {
-      statusEl.textContent = 'Kein Benutzer gefunden.';
+      setStatus('Kein Benutzer gefunden.', 'error');
       return;
     }
 
-    statusEl.textContent = 'Speichere...';
+    if (!validateRequiredFields()) return;
 
+    setStatus('Speichere Daten...', null);
+
+    // Avatar hochladen (falls neu)
     let avatarPath = currentAvatarPath;
-
     if (newAvatarFile) {
       const ext = newAvatarFile.name.split('.').pop();
       const fileName = `${currentUser.id}-${Date.now()}.${ext}`;
@@ -376,36 +581,65 @@
 
       if (uploadError) {
         console.error(uploadError);
-        statusEl.textContent = 'Fehler beim Bildupload.';
+        setStatus('Fehler beim Bildupload.', 'error');
         return;
       }
-
       avatarPath = uploadData.path;
     }
 
-    const updates = {
+    const newEmail = emailInput.value.trim();
+    const payload = {
       id: currentUser.id,
-      email: currentUser.email,
-      full_name: fullNameInput.value,
-      phone: phoneInput.value,
-      address: addressInput.value,
-      about: aboutInput.value,
+      vorname: vornameInput.value.trim(),
+      nachname: nachnameInput.value.trim(),
+      geburtsdatum: geburtsdatumInput.value ? geburtsdatumInput.value : null,
+      email: newEmail,
+      telefon: telefonInput.value.trim(),
+      strasse: strasseInput.value.trim(),
+      hausnummer: hausnummerInput.value.trim(),
+      postleitzahl: postleitzahlInput.value.trim(),
+      ort: ortInput.value.trim(),
+      bank: bankInput.value.trim(),
+      iban: ibanInput.value.trim(),
+      bic: bicInput.value.trim(),
+      steuer_id: steuerIdInput.value.trim() || null,
+      umsatzsteuernummer: ustIdInput.value.trim() || null,
       avatar_url: avatarPath,
       updated_at: new Date().toISOString()
     };
 
+    // benutzer-Daten speichern (rolle wird NICHT angefasst)
     const { error: upsertError } = await supabaseClient
       .from('benutzer')
-      .upsert(updates);
+      .upsert(payload);
 
     if (upsertError) {
       console.error(upsertError);
-      statusEl.textContent = 'Fehler beim Speichern.';
+      setStatus('Fehler beim Speichern der Daten.', 'error');
       return;
     }
 
     currentAvatarPath = avatarPath;
-    statusEl.textContent = 'Gespeichert ✅';
+
+    // E-Mail geändert?
+    if (newEmail !== originalEmail) {
+      const { error: emailError } = await supabaseClient.auth.updateUser({
+        email: newEmail
+      });
+
+      if (emailError) {
+        console.error(emailError);
+        setStatus('Daten gespeichert, aber E-Mail konnte nicht geändert werden.', 'error');
+        return;
+      }
+
+      originalEmail = newEmail;
+      emailStatusNote.textContent = 'E-Mail-Bestätigung ausstehend!';
+      emailStatusNote.classList.add('warning');
+      showPopup('E-Mail geändert. Bitte bestätige die neue Adresse per Link in der Mail.');
+    }
+
+    setStatus('Daten wurden erfolgreich gespeichert.', 'success');
   });
 
   window.addEventListener('load', loadProfile);
