@@ -544,7 +544,8 @@
       postleitzahlInput.value = profile.postleitzahl || '';
       ortInput.value = profile.ort || '';
       bankInput.value = profile.bank || '';
-      ibanInput.value = profile.iban || '';
+      // IBAN aus DB (ohne Leerzeichen) im Frontend mit Leerzeichen anzeigen
+      ibanInput.value = profile.iban ? formatIbanDisplay(profile.iban) : '';
       bicInput.value = profile.bic || '';
       steuerIdInput.value = profile.steuer_id || '';
       ustIdInput.value = profile.umsatzsteuernummer || '';
@@ -606,9 +607,15 @@
     return ok;
   }
 
-  /* --- IBAN-Prüfung + Bank/BIC via openiban.com --- */
+  /* --- IBAN-Prüfung + Formatierung + Bank/BIC via openiban.com --- */
   function normalizeIban(value) {
     return (value || '').replace(/\s+/g, '').toUpperCase();
+  }
+
+  function formatIbanDisplay(value) {
+    const plain = normalizeIban(value);
+    if (!plain) return '';
+    return plain.replace(/(.{4})/g, '$1 ').trim();
   }
 
   function isIbanChecksumValid(iban) {
@@ -691,18 +698,21 @@
     }
   }
 
+  // Eingabe: automatisch mit Leerzeichen formatiert + Prüfung
   ibanInput.addEventListener('input', () => {
-    const value = ibanInput.value;
+    const rawPlain = normalizeIban(ibanInput.value);
+    const formatted = formatIbanDisplay(rawPlain);
+    ibanInput.value = formatted;
 
     if (ibanCheckTimeout) clearTimeout(ibanCheckTimeout);
 
-    if (!value.trim()) {
+    if (!rawPlain) {
       setIbanStatus('', null);
       return;
     }
 
     ibanCheckTimeout = setTimeout(() => {
-      validateIbanAndLoadBank(value, false);
+      validateIbanAndLoadBank(rawPlain, false);
     }, 500);
   });
 
@@ -839,6 +849,7 @@
       postleitzahl: postleitzahlInput.value.trim(),
       ort: ortInput.value.trim(),
       bank: bankInput.value.trim(),
+      // hier: IBAN ohne Leerzeichen ins Backend
       iban: normalizeIban(ibanInput.value),
       bic: bicInput.value.trim(),
       steuer_id: steuerIdInput.value.trim() || null,
@@ -883,6 +894,7 @@
 
   window.addEventListener('load', loadProfile);
 </script>
+
 
 </body>
 </html>
