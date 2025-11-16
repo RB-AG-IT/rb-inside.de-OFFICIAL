@@ -550,16 +550,22 @@
       steuerIdInput.value = profile.steuer_id || '';
       ustIdInput.value = profile.umsatzsteuernummer || '';
 
-      currentAvatarPath = profile.avatar_url || null;
+       currentAvatarPath = profile.avatar_url || null;
       if (currentAvatarPath) {
-        const { data: publicData } = supabaseClient
-          .storage
-          .from('avatars')
-          .getPublicUrl(currentAvatarPath);
+        try {
+          const { data: signedData, error: signedError } = await supabaseClient
+            .storage
+            .from('avatars')
+            .createSignedUrl(currentAvatarPath, 60 * 60 * 24); // 24h gültig
 
-        if (publicData && publicData.publicUrl) {
-          avatarPreview.style.backgroundImage = `url('${publicData.publicUrl}')`;
-          avatarPreview.textContent = '';
+          if (!signedError && signedData && signedData.signedUrl) {
+            avatarPreview.style.backgroundImage = `url('${signedData.signedUrl}')`;
+            avatarPreview.textContent = '';
+          } else {
+            console.error('Signed URL Fehler:', signedError);
+          }
+        } catch (e) {
+          console.error('Avatar laden Fehler:', e);
         }
       }
     }
