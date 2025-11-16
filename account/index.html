@@ -99,19 +99,8 @@
       font-size: 12px; color: #555;
       position: relative;
       overflow: hidden;
-    }
-    .avatar-upload-label {
-      position: absolute;
-      bottom: 6px;
-      right: 6px;
-      background: #151a2b;
-      color: #fff;
-      font-size: 10px;
-      padding: 4px 8px;
-      border-radius: 999px;
       cursor: pointer;
     }
-    #avatarInput { display: none; }
 
     .profile-name-block h2 {
       margin: 0 0 4px; font-size: 22px;
@@ -215,6 +204,30 @@
     .suggestion-item:hover {
       background: #f3f3ff;
     }
+
+    /* Avatar Modal */
+    .avatar-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .avatar-modal {
+      background: #fff;
+      padding: 16px;
+      border-radius: 10px;
+      max-width: 320px;
+      width: 90%;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      font-size: 14px;
+    }
+    .avatar-modal h4 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
@@ -234,13 +247,27 @@
         <div class="profile-header">
           <div id="avatarPreview" class="avatar-box">
             Bild hochladen
-            <label for="avatarInput" class="avatar-upload-label">Ändern</label>
           </div>
-          <input type="file" id="avatarInput" accept="image/*">
 
           <div class="profile-name-block">
             <h2 id="displayName">Dein Name</h2>
             <span>Persönliche Account-Daten</span>
+          </div>
+        </div>
+
+        <!-- Mini-Popup für neues Profilbild -->
+        <div id="avatarModal" class="avatar-modal-backdrop">
+          <div class="avatar-modal">
+            <h4>Neues Profilbild</h4>
+            <input type="file" id="avatarInput" accept="image/*">
+            <div class="small-note" style="margin-top:4px;">
+              Bitte ein Bild (z.B. JPG oder PNG) auswählen.
+            </div>
+            <div style="margin-top:12px; display:flex; gap:8px; justify-content:flex-end;">
+              <button type="button" id="avatarCancelBtn" class="btn">Abbrechen</button>
+              <button type="button" id="avatarSaveBtn" class="btn btn-primary">Bild speichern</button>
+            </div>
+            <div id="avatarModalStatus" class="small-note" style="margin-top:6px;"></div>
           </div>
         </div>
 
@@ -339,13 +366,18 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   const supabaseUrl = 'https://ipitjuyeplkaywatmnxg.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaXRqdXllcGxrYXl3YXRtbnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNTU3NjEsImV4cCI6MjA3ODYzMTc2MX0.JZ71lI049-_Z0bJvXIyIOoMFNR_Cgg7wLgbuOEsXCec';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaXRqdXllcGxrYXl3YXRtbnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNTU3NjEsImV4cCI6MjA3ODYzMTc2MX0.JZ71lI049-_Z0bJvXIyIOoMFNR_Cgg7WlgbuOEsXCec';
   const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
   const GEOAPIFY_API_KEY = 'bbb56e4d3e5447a89b834ac1c3b8875d';
 
   const avatarPreview = document.getElementById('avatarPreview');
   const avatarInput = document.getElementById('avatarInput');
+  const avatarModal = document.getElementById('avatarModal');
+  const avatarSaveBtn = document.getElementById('avatarSaveBtn');
+  const avatarCancelBtn = document.getElementById('avatarCancelBtn');
+  const avatarModalStatus = document.getElementById('avatarModalStatus');
+
   const accountForm = document.getElementById('accountForm');
   const statusEl = document.getElementById('status');
   const popupEl = document.getElementById('popup');
@@ -404,6 +436,30 @@
   vornameInput.addEventListener('input', updateDisplayName);
   nachnameInput.addEventListener('input', updateDisplayName);
 
+  /* Avatar Modal öffnen/schließen */
+  avatarPreview.addEventListener('click', () => {
+    avatarModal.style.display = 'flex';
+    avatarModalStatus.textContent = '';
+    avatarInput.value = '';
+    newAvatarFile = null;
+  });
+
+  avatarCancelBtn.addEventListener('click', () => {
+    avatarModal.style.display = 'none';
+    avatarModalStatus.textContent = '';
+    avatarInput.value = '';
+    newAvatarFile = null;
+  });
+
+  avatarModal.addEventListener('click', (e) => {
+    if (e.target === avatarModal) {
+      avatarModal.style.display = 'none';
+      avatarModalStatus.textContent = '';
+      avatarInput.value = '';
+      newAvatarFile = null;
+    }
+  });
+
   avatarInput.addEventListener('change', (event) => {
     const file = event.target.files[0];
     if (!file) {
@@ -417,6 +473,79 @@
       avatarPreview.textContent = '';
     };
     reader.readAsDataURL(file);
+  });
+
+  async function saveAvatarOnly() {
+    if (!currentUser) {
+      avatarModalStatus.textContent = 'Kein Benutzer gefunden.';
+      return;
+    }
+    if (!newAvatarFile) {
+      avatarModalStatus.textContent = 'Bitte zuerst ein Bild auswählen.';
+      return;
+    }
+
+    avatarModalStatus.textContent = 'Lade Bild hoch...';
+
+    const ext = newAvatarFile.name.split('.').pop();
+    const fileName = `${currentUser.id}-${Date.now()}.${ext}`;
+
+    try {
+      const { data: uploadData, error: uploadError } = await supabaseClient
+        .storage
+        .from('avatars')
+        .upload(fileName, newAvatarFile, { upsert: true });
+
+      if (uploadError || !uploadData) {
+        console.error(uploadError);
+        avatarModalStatus.textContent = 'Fehler beim Bildupload.';
+        return;
+      }
+
+      const avatarPath = uploadData.path;
+
+      // Signierte URL holen
+      const { data: signedData, error: signedError } = await supabaseClient
+        .storage
+        .from('avatars')
+        .createSignedUrl(avatarPath, 60 * 60 * 24); // 24h
+
+      if (!signedError && signedData && signedData.signedUrl) {
+        avatarPreview.style.backgroundImage = `url('${signedData.signedUrl}')`;
+        avatarPreview.textContent = '';
+      }
+
+      // Pfad in Tabelle benutzer speichern
+      const { error: updateError } = await supabaseClient
+        .from('benutzer')
+        .update({
+          avatar_url: avatarPath,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', currentUser.id);
+
+      if (updateError) {
+        console.error(updateError);
+        avatarModalStatus.textContent = 'Bild hochgeladen, aber Profil konnte nicht gespeichert werden.';
+        return;
+      }
+
+      currentAvatarPath = avatarPath;
+      newAvatarFile = null;
+      avatarModalStatus.textContent = 'Bild wurde gespeichert.';
+
+      setTimeout(() => {
+        avatarModal.style.display = 'none';
+        avatarModalStatus.textContent = '';
+      }, 800);
+    } catch (e) {
+      console.error(e);
+      avatarModalStatus.textContent = 'Unerwarteter Fehler.';
+    }
+  }
+
+  avatarSaveBtn.addEventListener('click', () => {
+    saveAvatarOnly();
   });
 
   /* Sidebar laden */
@@ -497,7 +626,6 @@
 
     const { data, error } = await supabaseClient.auth.getUser();
     if (error || !data || !data.user) {
-      // nicht eingeloggt -> Login
       window.location.href = 'https://rb-inside.de/login/';
       return;
     }
@@ -506,7 +634,6 @@
     originalEmail = currentUser.email || '';
     emailInput.value = originalEmail;
 
-    // E-Mail-Status
     const confirmed = currentUser.email_confirmed_at || currentUser.confirmed_at;
     if (!confirmed) {
       emailStatusNote.textContent = 'E-Mail-Bestätigung ausstehend!';
@@ -516,7 +643,6 @@
       emailStatusNote.classList.remove('warning');
     }
 
-    // Daten aus Tabelle "benutzer"
     const { data: profile, error: profileError } = await supabaseClient
       .from('benutzer')
       .select('*')
@@ -532,7 +658,6 @@
     if (profile) {
       vornameInput.value = profile.vorname || '';
       nachnameInput.value = profile.nachname || '';
-      // Datum als yyyy-mm-dd
       if (profile.geburtsdatum) {
         const d = new Date(profile.geburtsdatum);
         const iso = d.toISOString().slice(0,10);
@@ -544,25 +669,22 @@
       postleitzahlInput.value = profile.postleitzahl || '';
       ortInput.value = profile.ort || '';
       bankInput.value = profile.bank || '';
-      // IBAN aus DB (ohne Leerzeichen) im Frontend mit Leerzeichen anzeigen
       ibanInput.value = profile.iban ? formatIbanDisplay(profile.iban) : '';
       bicInput.value = profile.bic || '';
       steuerIdInput.value = profile.steuer_id || '';
       ustIdInput.value = profile.umsatzsteuernummer || '';
 
-       currentAvatarPath = profile.avatar_url || null;
+      currentAvatarPath = profile.avatar_url || null;
       if (currentAvatarPath) {
         try {
           const { data: signedData, error: signedError } = await supabaseClient
             .storage
             .from('avatars')
-            .createSignedUrl(currentAvatarPath, 60 * 60 * 24); // 24h gültig
+            .createSignedUrl(currentAvatarPath, 60 * 60 * 24);
 
           if (!signedError && signedData && signedData.signedUrl) {
             avatarPreview.style.backgroundImage = `url('${signedData.signedUrl}')`;
             avatarPreview.textContent = '';
-          } else {
-            console.error('Signed URL Fehler:', signedError);
           }
         } catch (e) {
           console.error('Avatar laden Fehler:', e);
@@ -634,7 +756,7 @@
       const ch = rearranged[i];
       const code = ch.charCodeAt(0);
       if (code >= 65 && code <= 90) {
-        total += (code - 55).toString(); // A=10, B=11, ...
+        total += (code - 55).toString();
       } else {
         total += ch;
       }
@@ -704,7 +826,7 @@
     }
   }
 
-  // Eingabe: automatisch mit Leerzeichen formatiert + Prüfung
+  // IBAN: Eingabe formatieren + prüfen
   ibanInput.addEventListener('input', () => {
     const rawPlain = normalizeIban(ibanInput.value);
     const formatted = formatIbanDisplay(rawPlain);
@@ -722,7 +844,7 @@
     }, 500);
   });
 
-  /* --- GEOAPIFY: Autocomplete für Straße (DE + max 5 + IP-Bias + Deutsch) --- */
+  /* --- GEOAPIFY: Autocomplete für Straße --- */
   let strasseTimeout = null;
 
   function clearStrasseSuggestions() {
@@ -805,7 +927,7 @@
     }
   });
 
-  /* Formular speichern */
+  /* Formular speichern (ohne Bild-Upload, der läuft über das Modal) */
   accountForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (!currentUser) {
@@ -823,25 +945,6 @@
 
     setStatus('Speichere Daten...', null);
 
-    // Avatar hochladen (falls neu)
-    let avatarPath = currentAvatarPath;
-    if (newAvatarFile) {
-      const ext = newAvatarFile.name.split('.').pop();
-      const fileName = `${currentUser.id}-${Date.now()}.${ext}`;
-
-      const { data: uploadData, error: uploadError } = await supabaseClient
-        .storage
-        .from('avatars')
-        .upload(fileName, newAvatarFile, { upsert: true });
-
-      if (uploadError) {
-        console.error(uploadError);
-        setStatus('Fehler beim Bildupload.', 'error');
-        return;
-      }
-      avatarPath = uploadData.path;
-    }
-
     const newEmail = emailInput.value.trim();
     const payload = {
       id: currentUser.id,
@@ -855,16 +958,14 @@
       postleitzahl: postleitzahlInput.value.trim(),
       ort: ortInput.value.trim(),
       bank: bankInput.value.trim(),
-      // hier: IBAN ohne Leerzeichen ins Backend
       iban: normalizeIban(ibanInput.value),
       bic: bicInput.value.trim(),
       steuer_id: steuerIdInput.value.trim() || null,
       umsatzsteuernummer: ustIdInput.value.trim() || null,
-      avatar_url: avatarPath,
+      avatar_url: currentAvatarPath,
       updated_at: new Date().toISOString()
     };
 
-    // benutzer-Daten speichern (rolle wird NICHT angefasst)
     const { error: upsertError } = await supabaseClient
       .from('benutzer')
       .upsert(payload);
@@ -874,8 +975,6 @@
       setStatus('Fehler beim Speichern der Daten.', 'error');
       return;
     }
-
-    currentAvatarPath = avatarPath;
 
     // E-Mail geändert?
     if (newEmail !== originalEmail) {
@@ -900,7 +999,6 @@
 
   window.addEventListener('load', loadProfile);
 </script>
-
 
 </body>
 </html>
