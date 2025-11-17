@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>RB-INSIDE Layout</title>
+
+  <!-- WICHTIG FÜR APP / PWA -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#151a2b">
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: #f3f3ff; }
+
+    .app-wrapper {
+      min-height: 100vh;
+      padding-left: 60px; /* Platz für eingeklappte Sidebar (60px) */
+    }
+
+    /* TOGGLE-BUTTON LINKS OBEN */
+    .sidebar-toggle-floating {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: none;
+      background: #151a2b;
+      color: #fff;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 1200;
+      padding: 0;
+    }
+
+    /* TOPBAR */
+    .topbar {
+      height: 90px;
+      background: #151a2b;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+    }
+
+    .top-menu-button {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: none;
+      background: #ffffff22;
+      color: #fff;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .top-right-wrapper {
+      position: relative;
+    }
+
+    .top-dropdown {
+      position: absolute;
+      right: 0;
+      top: 48px;
+      background: #ffffff;
+      color: #151a2b;
+      border-radius: 8px;
+      min-width: 170px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      padding: 4px 0;
+      display: none;
+      z-index: 1100;
+    }
+    .top-dropdown.open { display: block; }
+
+    .top-dropdown button {
+      width: 100%;
+      padding: 8px 12px;
+      border: none;
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .top-dropdown button:hover { background: #f3f3ff; }
+
+    /* NEWS-BEREICH */
+    .news-center {
+      position: relative;
+      height: 90px;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .news-frame {
+      width: 70%;
+      height: 90px;
+      border: none;
+      background: transparent;
+    }
+
+    .news-fade-left,
+    .news-fade-right {
+      position: absolute;
+      width: 220px;
+      height: 90px;
+      pointer-events: none;
+    }
+
+    .news-fade-left {
+      left: 0;
+      background: linear-gradient(to right, #151a2b 0%, #151a2b 40%, transparent 100%);
+    }
+    .news-fade-right {
+      right: 0;
+      background: linear-gradient(to left, #151a2b 0%, #151a2b 40%, transparent 100%);
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 60px;              /* eingeklappt */
+      background: #151a2b;
+      color: #fff;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      padding: 90px 0 16px;     /* 90px Abstand (wie Topbar) */
+      transition: width 0.25s ease;
+      overflow: visible;        /* Drop-Up darf rausstehen */
+    }
+
+    .sidebar.expanded {
+      width: 220px;             /* ausgeklappt */
+    }
+
+    .sidebar-menu {
+      flex: 1;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    .sidebar-menu {
+      scrollbar-width: none;      /* Firefox */
+    }
+    .sidebar-menu::-webkit-scrollbar {
+      display: none;              /* Chrome, Safari, Edge */
+    }
+
+    /* Menüpunkte: Icon-Spalte ist immer 60px breit.
+       Icon bleibt damit IMMER an der gleichen Stelle. */
+    .sidebar-link {
+      padding: 8px 0;
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+    }
+
+    .sidebar-icon {
+      font-size: 18px;
+      width: 60px;                /* ganze Sidebar-Breite im eingeklappten Zustand */
+      display: flex;
+      justify-content: center;    /* Icon mittig in der Spalte */
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .sidebar-label {
+      display: none;
+    }
+    .sidebar.expanded .sidebar-label {
+      display: inline;
+    }
+
+    .sidebar-link:hover { background: #20263a; }
+
+    .sidebar-footer {
+      padding: 12px 0;
+      position: relative;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* DROP-UP UNTEN LINKS */
+    .settings-dropdown {
+      position: relative;
+      z-index: 2000;
+    }
+
+    /* Zahnrad unten: perfekter Kreis, gleiche Logik wie oben rechts */
+    .settings-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: none;
+      background: #2d3347;
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .settings-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .settings-menu {
+      position: fixed;
+      width: 220px;
+      z-index: 2001;
+      background: #20263a;
+      border-radius: 8px;
+      padding: 4px 0;
+      display: none;
+      box-shadow: 0 -4px 10px rgba(0,0,0,0.25);
+    }
+    .settings-menu.open {
+      display: block;
+    }
+
+    .settings-menu a {
+      display: block;
+      padding: 8px 12px;
+      color: #fff;
+      font-size: 13px;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .settings-menu a:hover { background: #2d3347; }
+
+    /* CONTENT */
+    .main-content {
+      padding: 24px;
+    }
+
+    .dummy-box {
+      background: #fff;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOGGLE -->
+  <button id="sidebarToggle" class="sidebar-toggle-floating">☰</button>
+
+  <div class="app-wrapper">
+
+    <!-- SIDEBAR -->
+    <nav id="sidebar" class="sidebar">
+
+      <div class="sidebar-menu">
+        <!-- Hauptmenü + ergänzte Punkte -->
+        <a class="sidebar-link">
+          <span class="sidebar-icon">🏠</span>
+          <span class="sidebar-label">Dashboard</span>
+        </a>
+        <a class="sidebar-link">
+          <span class="sidebar-icon">🏆</span>
+          <span class="sidebar-label">Ranking</span>
+        </a>
+        <a class="sidebar-link">
+          <span class="sidebar-icon">📊</span>
+          <span class="sidebar-label">Statistik</span>
+        </a>
+        <a class="sidebar-link">
+          <span class="sidebar-icon">🎯</span>
+          <span class="sidebar-label">Kampagnen</span>
+        </a>
+        <a class="sidebar-link">
+          <span class="sidebar-icon">💰</span>
+          <span class="sidebar-label">Investments</span>
+        </a>
+        <a class="sidebar-link">
+          <span class="sidebar-icon">👥</span>
+          <span class="sidebar-label">Recruiting</span>
+        </a>
+        <a class="sidebar-link">
+          <span class="sidebar-icon">💼</span>
+          <span class="sidebar-label">Abrechnung</span>
+        </a>
+        <a class="sidebar-link">
+          <span class="sidebar-icon">👔</span>
+          <span class="sidebar-label">Teamchef</span>
+        </a>
+
+        <!-- NEUE MENÜPUNKTE -->
+        <a class="sidebar-link">
+          <span class="sidebar-icon">🧑</span>
+          <span class="sidebar-label">Benutzer</span>
+        </a>
+        <a class="sidebar-link">
+          <span class="sidebar-icon">🏢</span>
+          <span class="sidebar-label">Kunden</span>
+        </a>
+        <a class="sidebar-link">
+          <span class="sidebar-icon">📝</span>
+          <span class="sidebar-label">Formular</span>
+        </a>
+        <a class="sidebar-link">
+          <span class="sidebar-icon">👨‍👩‍👧‍👦</span>
+          <span class="sidebar-label">Teams</span>
+        </a>
+        <a class="sidebar-link">
+          <span class="sidebar-icon">📦</span>
+          <span class="sidebar-label">Lager</span>
+        </a>
+
+        <a class="sidebar-link">
+          <span class="sidebar-icon">📁</span>
+          <span class="sidebar-label">Archive</span>
+        </a>
+
+        <a class="sidebar-link">
+          <span class="sidebar-icon">⚡</span>
+          <span class="sidebar-label">Schnellzugriff</span>
+        </a>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="settings-dropdown">
+          <button id="settingsToggle" class="settings-btn">
+            <span class="settings-icon">⚙</span>
+          </button>
+          <div id="settingsMenu" class="settings-menu">
+            <a>Allgemein</a>
+            <a>Benutzer & Rollen</a>
+            <a>System</a>
+          </div>
+        </div>
+      </div>
+
+    </nav>
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="news-center">
+        <div class="news-fade-left"></div>
+        <iframe src="/news/" class="news-frame"></iframe>
+        <div class="news-fade-right"></div>
+      </div>
+
+      <div class="top-right-wrapper">
+        <button id="topMenuButton" class="top-menu-button">⚙</button>
+        <div id="topDropdown" class="top-dropdown">
+          <button>Profil</button>
+          <button>Benachrichtigungen</button>
+          <button>Hilfe</button>
+          <button>Einstellungen</button>
+          <button>Logout</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="main-content">
+      <div class="dummy-box">
+        <p>Platzhalter-Inhalt. Sidebar-Layout ist neu aufgebaut.</p>
+      </div>
+    </main>
+
+  </div>
+
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+
+    const settingsToggle = document.getElementById('settingsToggle');
+    const settingsMenu = document.getElementById('settingsMenu');
+
+    const topMenuButton = document.getElementById('topMenuButton');
+    const topDropdown = document.getElementById('topDropdown');
+
+    // Sidebar ein/ausklappen
+    sidebarToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      sidebar.classList.toggle('expanded');
+    });
+
+    // Einstellungen Drop-Menü rechts von der Sidebar
+    settingsToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+
+      // Wenn offen -> schließen
+      if (settingsMenu.classList.contains('open')) {
+        settingsMenu.classList.remove('open');
+        return;
+      }
+
+      // Sidebar-Breite ermitteln (eingeklappt 60px, ausgeklappt 220px)
+      const sidebarWidth = sidebar.classList.contains('expanded') ? 220 : 60;
+
+      // Menü kurz öffnen, um die Höhe zu messen
+      settingsMenu.classList.add('open');
+      const btnRect = settingsToggle.getBoundingClientRect();
+      const menuRect = settingsMenu.getBoundingClientRect();
+
+      // 12px rechts neben der Sidebar, unten bündig mit dem Einstellungen-Button
+      const left = sidebarWidth + 12;
+
+      // Unterkante des Menüs = Unterkante des Buttons
+      const top = btnRect.bottom - menuRect.height;
+
+      settingsMenu.style.left = left + 'px';
+      settingsMenu.style.top  = top + 'px';
+    });
+
+    // Top-Dropdown rechts
+    topMenuButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      topDropdown.classList.toggle('open');
+    });
+
+    // Klick außerhalb: Menüs schließen
+    document.addEventListener('click', () => {
+      settingsMenu.classList.remove('open');
+      topDropdown.classList.remove('open');
+    });
+
+    // SERVICE WORKER REGISTRIEREN (für PWA / Installierbarkeit)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker
+          .register('./sw.js')
+          .catch((err) => {
+            console.log('Service Worker Fehler:', err);
+          });
+      });
+    }
+  </script>
+
+</body>
+</html>
