@@ -383,6 +383,59 @@
       grid-row: span 1;
     }
 
+    /* RANKING STYLES */
+    .ranking-list {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .ranking-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 8px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid transparent;
+      font-size: 12px;
+    }
+
+    .ranking-item-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ranking-badge {
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 240, 255, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: #eafbff;
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+    }
+
+    .ranking-name {
+      color: #f5f7ff;
+    }
+
+    .ranking-value {
+      font-size: 12px;
+      color: #a6fffe;
+    }
+
+    .ranking-item.active {
+      border-color: rgba(0, 240, 255, 0.7);
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.45);
+      background: linear-gradient(90deg, rgba(0, 240, 255, 0.22), rgba(0, 0, 0, 0.1));
+    }
+
     /* BOTTOM NAV */
     .bottom-nav {
       position: fixed;
@@ -526,15 +579,56 @@
       </div>
 
       <div class="tile-grid">
-        <!-- Große Kachel -->
+        <!-- GROSSE KACHEL MIT ANIMIERTEM RANKING -->
         <div class="tile tile-large">
           <div class="tile-inner">
-            <div class="tile-label">Gesamtstatus</div>
-            <div class="tile-title">RB-INSIDE Control Hub</div>
-            <div class="tile-value">LIVE • 99,8%</div>
-            <div class="tile-meta">Backend: Supabase • Frontend: Web App Overlay</div>
+            <div class="tile-label">Live-Ranking</div>
+            <div class="tile-title">Interne Bereiche</div>
+            <div class="tile-meta">Dummy-Ranking • nur Optik • später echte Daten</div>
+
+            <div class="ranking-list">
+              <div class="ranking-item active">
+                <div class="ranking-item-left">
+                  <div class="ranking-badge">1</div>
+                  <div class="ranking-name">Kundenportal</div>
+                </div>
+                <div class="ranking-value">98 Punkte</div>
+              </div>
+
+              <div class="ranking-item">
+                <div class="ranking-item-left">
+                  <div class="ranking-badge">2</div>
+                  <div class="ranking-name">Formulare</div>
+                </div>
+                <div class="ranking-value">93 Punkte</div>
+              </div>
+
+              <div class="ranking-item">
+                <div class="ranking-item-left">
+                  <div class="ranking-badge">3</div>
+                  <div class="ranking-name">Mitglieder</div>
+                </div>
+                <div class="ranking-value">89 Punkte</div>
+              </div>
+
+              <div class="ranking-item">
+                <div class="ranking-item-left">
+                  <div class="ranking-badge">4</div>
+                  <div class="ranking-name">Auswertungen</div>
+                </div>
+                <div class="ranking-value">82 Punkte</div>
+              </div>
+
+              <div class="ranking-item">
+                <div class="ranking-item-left">
+                  <div class="ranking-badge">5</div>
+                  <div class="ranking-name">Automation (Beta)</div>
+                </div>
+                <div class="ranking-value">76 Punkte</div>
+              </div>
+            </div>
           </div>
-          <div class="tile-tag">System</div>
+          <div class="tile-tag">Ranking</div>
         </div>
 
         <!-- Kleine Kachel -->
@@ -640,6 +734,17 @@
       alert('Dummy: Profil-Auswahl kommt später hier rein.');
     });
 
+    // Einfaches animiertes Ranking: aktive Zeile wandert nach unten
+    const rankingItems = document.querySelectorAll('.ranking-item');
+    if (rankingItems.length > 0) {
+      let activeIndex = 0;
+      setInterval(() => {
+        rankingItems[activeIndex].classList.remove('active');
+        activeIndex = (activeIndex + 1) % rankingItems.length;
+        rankingItems[activeIndex].classList.add('active');
+      }, 2200);
+    }
+
     // Service Worker Registrierung (für Web App)
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -647,9 +752,8 @@
       });
     }
 
-    // Einfacher Auto-Reload bei Fokus (damit Änderungen schneller sichtbar)
+    // Einfacher Auto-Reload bei Fokus (optional)
     window.addEventListener('focus', () => {
-      // Optional: kannst du rausnehmen, wenn es nervt
       // location.reload();
     });
   </script>
