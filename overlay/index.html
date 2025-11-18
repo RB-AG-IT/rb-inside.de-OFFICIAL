@@ -262,11 +262,13 @@
       background: linear-gradient(to left, rgba(5, 5, 9, 1) 0, rgba(5, 5, 9, 0) 100%);
     }
 
-    /* INHALT */
+    /* INHALT – Layout fix im sichtbaren Bereich */
     .content {
       max-width: 900px;
       margin: 0 auto;
       padding: 12px 14px 18px;
+      height: calc(100vh - 60px - 70px);
+      overflow: hidden; /* Seite selbst scrollt nicht, Layout bleibt fix */
     }
 
     .section-header {
@@ -289,12 +291,14 @@
       color: #7e82a4;
     }
 
-    /* KACHELGRID */
+    /* KACHELGRID – immer 2 Spalten, feste Positionen */
     .tile-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       grid-auto-rows: 120px;
       gap: 10px;
+      margin-top: 8px;
+      height: calc(100% - 32px);
     }
 
     .tile {
@@ -365,11 +369,13 @@
       border: 1px solid rgba(255, 255, 255, 0.18);
       background: rgba(0, 0, 0, 0.4);
       color: #d7e7ff;
+      position: relative;
+      z-index: 1;
     }
 
     /* KACHELGRÖSSEN */
     .tile-small {
-      grid-column: span 2; /* Standard: kleine Kachel = volle Breite */
+      grid-column: span 2; /* kleine Kachel = volle Breite */
       grid-row: span 1;
     }
 
@@ -379,13 +385,19 @@
     }
 
     .tile-xs {
-      grid-column: span 1;/* zwei XS nebeneinander ≈ eine kleine Kachel */
+      grid-column: span 1;/* zwei XS nebeneinander ≈ kleine Kachel */
       grid-row: span 1;
     }
 
-    /* RANKING STYLES */
+    /* RANKING – scrollbare Liste in großer Kachel */
+    .ranking-scroll {
+      margin-top: 8px;
+      max-height: 150px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
     .ranking-list {
-      margin-top: 10px;
       display: flex;
       flex-direction: column;
       gap: 6px;
@@ -436,6 +448,94 @@
       background: linear-gradient(90deg, rgba(0, 240, 255, 0.22), rgba(0, 0, 0, 0.1));
     }
 
+    /* AKTIEN-CHART KACHEL */
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .chart-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #f5f7ff;
+    }
+
+    .chart-chip {
+      font-size: 10px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 240, 255, 0.5);
+      color: #a6fffe;
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .chart-meta {
+      font-size: 11px;
+      color: #868bb0;
+      margin-bottom: 8px;
+    }
+
+    .chart-area {
+      position: relative;
+      height: 70px;
+      border-radius: 12px;
+      background: radial-gradient(circle at top, #1a2336 0, #05060c 70%);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      padding: 4px 6px;
+      overflow: hidden;
+    }
+
+    .chart-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .chart-line {
+      stroke: #00f0ff;
+      stroke-width: 2;
+      fill: none;
+      stroke-dasharray: 200;
+      animation: dash 4s linear infinite;
+    }
+
+    .chart-glow {
+      filter: drop-shadow(0 0 6px rgba(0, 240, 255, 0.8));
+    }
+
+    .chart-dot {
+      fill: #ffffff;
+      stroke: #00f0ff;
+      stroke-width: 1;
+      animation: dotMove 4s linear infinite;
+    }
+
+    @keyframes dash {
+      from { stroke-dashoffset: 0; }
+      to   { stroke-dashoffset: -400; }
+    }
+
+    @keyframes dotMove {
+      0%   { transform: translate(0px, 0px); }
+      25%  { transform: translate(40px, -10px); }
+      50%  { transform: translate(80px, -2px); }
+      75%  { transform: translate(120px, -16px); }
+      100% { transform: translate(160px, -6px); }
+    }
+
+    .chart-footer {
+      margin-top: 6px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: #7e82a4;
+    }
+
+    .chart-footer span:last-child {
+      color: #1de9b6;
+    }
+
     /* BOTTOM NAV */
     .bottom-nav {
       position: fixed;
@@ -483,30 +583,6 @@
     .nav-button.nav-active .nav-icon {
       border-color: rgba(0, 240, 255, 0.7);
       box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);
-    }
-
-    /* KLEINE ANPASSUNGEN FÜR GRÖSSERE SCREENS */
-    @media (min-width: 600px) {
-      .tile-grid {
-        grid-auto-rows: 130px;
-      }
-    }
-
-    @media (min-width: 900px) {
-      .tile-grid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        grid-auto-rows: 140px;
-      }
-      .tile-small {
-        grid-column: span 2;
-      }
-      .tile-large {
-        grid-column: span 2;
-        grid-row: span 2;
-      }
-      .tile-xs {
-        grid-column: span 1;
-      }
     }
   </style>
 </head>
@@ -579,67 +655,104 @@
       </div>
 
       <div class="tile-grid">
-        <!-- GROSSE KACHEL MIT ANIMIERTEM RANKING -->
+        <!-- GROSSE KACHEL MIT SCROLLBAREM RANKING -->
         <div class="tile tile-large">
           <div class="tile-inner">
             <div class="tile-label">Live-Ranking</div>
             <div class="tile-title">Interne Bereiche</div>
             <div class="tile-meta">Dummy-Ranking • nur Optik • später echte Daten</div>
 
-            <div class="ranking-list">
-              <div class="ranking-item active">
-                <div class="ranking-item-left">
-                  <div class="ranking-badge">1</div>
-                  <div class="ranking-name">Kundenportal</div>
+            <div class="ranking-scroll">
+              <div class="ranking-list">
+                <div class="ranking-item active">
+                  <div class="ranking-item-left">
+                    <div class="ranking-badge">1</div>
+                    <div class="ranking-name">Kundenportal</div>
+                  </div>
+                  <div class="ranking-value">98 Punkte</div>
                 </div>
-                <div class="ranking-value">98 Punkte</div>
-              </div>
 
-              <div class="ranking-item">
-                <div class="ranking-item-left">
-                  <div class="ranking-badge">2</div>
-                  <div class="ranking-name">Formulare</div>
+                <div class="ranking-item">
+                  <div class="ranking-item-left">
+                    <div class="ranking-badge">2</div>
+                    <div class="ranking-name">Formulare</div>
+                  </div>
+                  <div class="ranking-value">93 Punkte</div>
                 </div>
-                <div class="ranking-value">93 Punkte</div>
-              </div>
 
-              <div class="ranking-item">
-                <div class="ranking-item-left">
-                  <div class="ranking-badge">3</div>
-                  <div class="ranking-name">Mitglieder</div>
+                <div class="ranking-item">
+                  <div class="ranking-item-left">
+                    <div class="ranking-badge">3</div>
+                    <div class="ranking-name">Mitglieder</div>
+                  </div>
+                  <div class="ranking-value">89 Punkte</div>
                 </div>
-                <div class="ranking-value">89 Punkte</div>
-              </div>
 
-              <div class="ranking-item">
-                <div class="ranking-item-left">
-                  <div class="ranking-badge">4</div>
-                  <div class="ranking-name">Auswertungen</div>
+                <div class="ranking-item">
+                  <div class="ranking-item-left">
+                    <div class="ranking-badge">4</div>
+                    <div class="ranking-name">Auswertungen</div>
+                  </div>
+                  <div class="ranking-value">82 Punkte</div>
                 </div>
-                <div class="ranking-value">82 Punkte</div>
-              </div>
 
-              <div class="ranking-item">
-                <div class="ranking-item-left">
-                  <div class="ranking-badge">5</div>
-                  <div class="ranking-name">Automation (Beta)</div>
+                <div class="ranking-item">
+                  <div class="ranking-item-left">
+                    <div class="ranking-badge">5</div>
+                    <div class="ranking-name">Automation (Beta)</div>
+                  </div>
+                  <div class="ranking-value">76 Punkte</div>
                 </div>
-                <div class="ranking-value">76 Punkte</div>
+
+                <!-- Mehr Dummy-Einträge für Scroll-Effekt -->
+                <div class="ranking-item">
+                  <div class="ranking-item-left">
+                    <div class="ranking-badge">6</div>
+                    <div class="ranking-name">Archiv</div>
+                  </div>
+                  <div class="ranking-value">71 Punkte</div>
+                </div>
+
+                <div class="ranking-item">
+                  <div class="ranking-item-left">
+                    <div class="ranking-badge">7</div>
+                    <div class="ranking-name">Benachrichtigungen</div>
+                  </div>
+                  <div class="ranking-value">65 Punkte</div>
+                </div>
               </div>
             </div>
           </div>
           <div class="tile-tag">Ranking</div>
         </div>
 
-        <!-- Kleine Kachel -->
+        <!-- KLEINE KACHEL – ANIMIERTER AKTIENCHART -->
         <div class="tile tile-small">
           <div class="tile-inner">
-            <div class="tile-label">Kunden</div>
-            <div class="tile-title">Aktive Kunden</div>
-            <div class="tile-value">128</div>
-            <div class="tile-meta">Dummy-Zahl • nur Layout • später echte DB</div>
+            <div class="chart-header">
+              <div class="chart-title">Dummy-Aktie • RB-INDEX</div>
+              <div class="chart-chip">+3,4 %</div>
+            </div>
+            <div class="chart-meta">Nur Demo-Chart • keine echten Kurse • reine Optik</div>
+
+            <div class="chart-area">
+              <svg class="chart-svg" viewBox="0 0 160 60" preserveAspectRatio="none">
+                <g class="chart-glow">
+                  <polyline
+                    class="chart-line"
+                    points="0,45 15,40 30,42 45,32 60,36 75,25 90,30 105,18 120,24 135,15 150,20"
+                  />
+                  <circle class="chart-dot" cx="150" cy="20" r="3" />
+                </g>
+              </svg>
+            </div>
+
+            <div class="chart-footer">
+              <span>Heute</span>
+              <span>Realtime Dummy • 1D</span>
+            </div>
           </div>
-          <div class="tile-tag">Kunden</div>
+          <div class="tile-tag">Chart</div>
         </div>
 
         <!-- Zwei XS-Nebeneinander (zusammen ≈ kleine Kachel) -->
@@ -660,7 +773,7 @@
           </div>
         </div>
 
-        <!-- Zwei kleine übereinander (ergibt Höhe wie große Kachel) -->
+        <!-- Zwei kleine übereinander -->
         <div class="tile tile-small">
           <div class="tile-inner">
             <div class="tile-label">Mitglieder</div>
@@ -752,7 +865,7 @@
       });
     }
 
-    // Einfacher Auto-Reload bei Fokus (optional)
+    // Optionaler Auto-Reload bei Fokus
     window.addEventListener('focus', () => {
       // location.reload();
     });
