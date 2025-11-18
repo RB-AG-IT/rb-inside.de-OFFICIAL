@@ -453,7 +453,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
     .chart-title {
@@ -474,12 +474,12 @@
     .chart-meta {
       font-size: 11px;
       color: #868bb0;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
 
     .chart-area {
       position: relative;
-      height: 70px;
+      height: 40px; /* sehr klein, bleibt in der Kachel */
       border-radius: 12px;
       background: radial-gradient(circle at top, #1a2336 0, #05060c 70%);
       border: 1px solid rgba(0, 240, 255, 0.2);
@@ -497,7 +497,7 @@
       stroke-width: 2;
       fill: none;
       stroke-dasharray: 200;
-      animation: dash 4s linear infinite;
+      animation: dash 40s linear infinite; /* 10x langsamer */
     }
 
     .chart-glow {
@@ -508,7 +508,8 @@
       fill: #ffffff;
       stroke: #00f0ff;
       stroke-width: 1;
-      animation: dotMove 4s linear infinite;
+      animation: dotMove 40s linear infinite; /* 10x langsamer */
+      transform-origin: 150px 20px;
     }
 
     @keyframes dash {
@@ -518,14 +519,23 @@
 
     @keyframes dotMove {
       0%   { transform: translate(0px, 0px); }
-      25%  { transform: translate(40px, -10px); }
-      50%  { transform: translate(80px, -2px); }
-      75%  { transform: translate(120px, -16px); }
-      100% { transform: translate(160px, -6px); }
+      25%  { transform: translate(-32px, 4px); }
+      50%  { transform: translate(-64px, -3px); }
+      75%  { transform: translate(-96px, 5px); }
+      100% { transform: translate(-128px, 0px); }
+    }
+
+    .chart-axis {
+      margin-top: 4px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      color: #6f7494;
+      letter-spacing: 0.06em;
     }
 
     .chart-footer {
-      margin-top: 6px;
+      margin-top: 4px;
       display: flex;
       justify-content: space-between;
       font-size: 10px;
@@ -704,7 +714,6 @@
                   <div class="ranking-value">76 Punkte</div>
                 </div>
 
-                <!-- Mehr Dummy-Einträge für Scroll-Effekt -->
                 <div class="ranking-item">
                   <div class="ranking-item-left">
                     <div class="ranking-badge">6</div>
@@ -733,7 +742,7 @@
               <div class="chart-title">Dummy-Aktie • RB-INDEX</div>
               <div class="chart-chip">+3,4 %</div>
             </div>
-            <div class="chart-meta">Nur Demo-Chart • keine echten Kurse • reine Optik</div>
+            <div class="chart-meta">Monatsverlauf • reine Demo • keine echten Kurse</div>
 
             <div class="chart-area">
               <svg class="chart-svg" viewBox="0 0 160 60" preserveAspectRatio="none">
@@ -747,9 +756,19 @@
               </svg>
             </div>
 
+            <div class="chart-axis">
+              <span>01</span>
+              <span>05</span>
+              <span>10</span>
+              <span>15</span>
+              <span>20</span>
+              <span>25</span>
+              <span>30</span>
+            </div>
+
             <div class="chart-footer">
-              <span>Heute</span>
-              <span>Realtime Dummy • 1D</span>
+              <span>RB-INDEX • Dummy</span>
+              <span>Langsame Simulation • 1M</span>
             </div>
           </div>
           <div class="tile-tag">Chart</div>
