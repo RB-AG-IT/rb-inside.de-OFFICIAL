@@ -41,7 +41,7 @@
       left: 0;
       right: 0;
       height: 50px;
-      padding: 0 16px;
+      padding: 0 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -55,29 +55,6 @@
       display: flex;
       align-items: center;
       gap: 10px;
-    }
-
-    .app-logo {
-      width: 26px;
-      height: 26px;
-      border-radius: 999px;
-      border: 1px solid rgba(0, 255, 200, 0.35);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      font-weight: 600;
-      color: #00f0ff;
-      box-shadow: 0 0 14px rgba(0, 255, 200, 0.25);
-    }
-
-    .app-title {
-      font-size: 14px;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #d6d9ff;
-      opacity: 0.85;
     }
 
     .sidebar-toggle {
@@ -95,7 +72,7 @@
 
     .sidebar-toggle:active {
       transform: scale(0.95);
-      box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
       border-color: rgba(0, 240, 255, 0.4);
     }
 
@@ -117,41 +94,38 @@
       align-self: flex-end;
     }
 
-    .profile-area {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .profile-name {
-      font-size: 12px;
-      color: #c7cae9;
+    .app-title {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #e4e7ff;
       opacity: 0.9;
+      text-align: center;
+      flex: 1;
     }
 
-    .profile-chip {
+    .top-spacer {
+      width: 32px;
+      height: 32px;
+    }
+
+    .profile-avatar-wrapper {
+      width: 32px;
+      height: 32px;
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 4px 8px 4px 4px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      background: radial-gradient(circle at top right, #2a324b 0, #151827 60%, #060815 100%);
-      cursor: pointer;
+      justify-content: center;
     }
 
     .profile-avatar {
-      width: 24px;
-      height: 24px;
+      width: 26px;
+      height: 26px;
       border-radius: 999px;
-      background: radial-gradient(circle at 30% 0, #ffffff 0, #999 35%, #444 70%, #111 100%);
-      border: 1px solid rgba(255, 255, 255, 0.7);
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.18);
-    }
-
-    .profile-chevron {
-      font-size: 11px;
-      opacity: 0.7;
+      background: radial-gradient(circle at 30% 0, #ffffff 0, #b0b0b0 30%, #555 65%, #111 100%);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+      cursor: pointer;
     }
 
     /* SIDEBAR */
@@ -217,8 +191,12 @@
       font-size: 13px;
     }
 
+    .sidebar-item span {
+      white-space: nowrap;
+    }
+
     .sidebar-item.active {
-      background: radial-gradient(circle at left, rgba(0, 240, 255, 0.16) 0, rgba(0, 0, 0, 0.0) 55%);
+      background: radial-gradient(circle at left, rgba(0, 240, 255, 0.16) 0, rgba(0, 0, 0, 0) 55%);
       border-color: rgba(0, 240, 255, 0.25);
     }
 
@@ -270,7 +248,7 @@
       background: linear-gradient(to left, rgba(5, 5, 9, 1) 0, rgba(5, 5, 9, 0) 100%);
     }
 
-    /* INHALT – Layout fix im sichtbaren Bereich */
+    /* INHALT – nur Kacheln, Layout starr */
     .content {
       max-width: 900px;
       margin: 0 auto;
@@ -279,7 +257,6 @@
       overflow: hidden;
     }
 
-    /* KACHELGRID – Layout starr */
     .tile-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -300,7 +277,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
     }
 
     .tile::before {
@@ -322,7 +299,7 @@
     .tile:hover {
       transform: translateY(-2px);
       box-shadow:
-        0 0 0 1px rgba(0, 240, 255, 0.25),
+        0 0 0 1px rgba(0, 240, 255, 0.24),
         0 18px 46px rgba(0, 0, 0, 0.9);
       border-color: rgba(0, 240, 255, 0.35);
     }
@@ -330,7 +307,7 @@
     .tile-label {
       font-size: 10px;
       text-transform: uppercase;
-      letter-spacing: 0.16em;
+      letter-spacing: 0.14em;
       color: #8287aa;
       margin-bottom: 4px;
       opacity: 0.9;
@@ -386,7 +363,7 @@
       height: 170px;
     }
 
-    /* RANKING – scrollbare Liste in großer Kachel */
+    /* Ranking-Liste (statisch, ohne Animation) */
     .ranking-scroll {
       margin-top: 8px;
       max-height: 220px;
@@ -409,7 +386,6 @@
       background: rgba(0, 0, 0, 0.35);
       border: 1px solid transparent;
       font-size: 12px;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
     }
 
     .ranking-item-left {
@@ -428,7 +404,6 @@
       justify-content: center;
       font-size: 11px;
       color: #eafbff;
-      box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
       background: radial-gradient(circle at 30% 0, #00f0ff 0, #004d5a 60%, #000 100%);
     }
 
@@ -441,20 +416,13 @@
       color: #a6fffe;
     }
 
-    .ranking-item.active {
-      border-color: rgba(0, 240, 255, 0.7);
-      box-shadow: 0 0 16px rgba(0, 240, 255, 0.45);
-      background: linear-gradient(90deg, rgba(0, 240, 255, 0.22), rgba(0, 0, 0, 0.1));
-      animation: rankingPulse 2.2s ease-in-out infinite;
+    .ranking-item:first-child {
+      border-color: rgba(0, 240, 255, 0.6);
+      box-shadow: 0 0 14px rgba(0, 240, 255, 0.35);
+      background: linear-gradient(90deg, rgba(0, 240, 255, 0.2), rgba(0, 0, 0, 0.1));
     }
 
-    @keyframes rankingPulse {
-      0% { transform: translateX(0); }
-      50% { transform: translateX(1px); }
-      100% { transform: translateX(0); }
-    }
-
-    /* AKTIEN-CHART KACHEL */
+    /* AKTIEN-CHART KACHEL (ruhige Linie) */
     .chart-header {
       display: flex;
       justify-content: space-between;
@@ -502,33 +470,10 @@
       stroke: #00f0ff;
       stroke-width: 2;
       fill: none;
-      stroke-dasharray: 200;
-      animation: dash 40s linear infinite;
     }
 
     .chart-glow {
       filter: drop-shadow(0 0 6px rgba(0, 240, 255, 0.8));
-    }
-
-    .chart-dot {
-      fill: #ffffff;
-      stroke: #00f0ff;
-      stroke-width: 1;
-      animation: dotMove 40s linear infinite;
-      transform-origin: 150px 20px;
-    }
-
-    @keyframes dash {
-      from { stroke-dashoffset: 0; }
-      to   { stroke-dashoffset: -400; }
-    }
-
-    @keyframes dotMove {
-      0%   { transform: translate(0px, 0px); }
-      25%  { transform: translate(-32px, 4px); }
-      50%  { transform: translate(-64px, -3px); }
-      75%  { transform: translate(-96px, 5px); }
-      100% { transform: translate(-128px, 0px); }
     }
 
     .chart-axis {
@@ -552,97 +497,46 @@
       color: #1de9b6;
     }
 
-    /* BOTTOM NAV – 50px */
+    /* BOTTOM NAV – 50px, nur Icons */
     .bottom-nav {
       position: fixed;
       left: 0;
       right: 0;
       bottom: 0;
       height: 50px;
-      padding: 4px 18px 6px;
+      padding: 4px 30px;
       background: rgba(5, 5, 9, 0.98);
       border-top: 1px solid rgba(255, 255, 255, 0.08);
       backdrop-filter: blur(18px);
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
+      gap: 24px;
       z-index: 25;
     }
 
     .nav-button {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      font-size: 10px;
-      color: #7f84a5;
-      cursor: pointer;
-    }
-
-    .nav-icon {
-      width: 24px;
-      height: 24px;
+      width: 32px;
+      height: 32px;
       border-radius: 999px;
       border: 1px solid rgba(255, 255, 255, 0.24);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 13px;
-      margin-bottom: 1px;
+      font-size: 14px;
+      color: #7f84a5;
+      cursor: pointer;
+      transition: border-color 0.12s ease, box-shadow 0.12s ease, color 0.12s ease, transform 0.1s ease;
+    }
+
+    .nav-button:active {
+      transform: scale(0.95);
     }
 
     .nav-button.nav-active {
       color: #eaf7ff;
-    }
-
-    .nav-button.nav-active .nav-icon {
       border-color: rgba(0, 240, 255, 0.7);
-      box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);
-    }
-
-    /* Kleine Extras in Kacheln */
-    .ping-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background: #1de9b6;
-      box-shadow: 0 0 8px rgba(29, 233, 182, 0.8);
-      animation: pingPulse 1.6s ease-in-out infinite;
-    }
-
-    @keyframes pingPulse {
-      0% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.4); opacity: 0.6; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-
-    .sandbox-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 9px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      font-size: 11px;
-      color: #f5f7ff;
-      background: radial-gradient(circle at top, rgba(139, 155, 255, 0.25), rgba(5, 6, 15, 0.95));
-    }
-
-    .sandbox-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 999px;
-      background: #ffb300;
-      box-shadow: 0 0 6px rgba(255, 179, 0, 0.8);
-    }
-
-    .grow-number {
-      transition: transform 0.12s ease;
-    }
-
-    .grow-number.bump {
-      transform: scale(1.1);
+      box-shadow: 0 0 14px rgba(0, 240, 255, 0.4);
     }
   </style>
 </head>
@@ -659,16 +553,12 @@
             <div class="sidebar-toggle-line"></div>
           </div>
         </div>
-        <div class="app-logo">RB</div>
-        <div class="app-title">Inside Control</div>
       </div>
 
-      <div class="profile-area" id="profileArea">
-        <div class="profile-name">Teamchef • Online</div>
-        <div class="profile-chip">
-          <div class="profile-avatar"></div>
-          <div class="profile-chevron">▼</div>
-        </div>
+      <div class="app-title">RHODENBURG AG</div>
+
+      <div class="profile-avatar-wrapper">
+        <div class="profile-avatar" id="profileAvatar"></div>
       </div>
     </header>
 
@@ -707,19 +597,19 @@
     <div class="edge-fade-left"></div>
     <div class="edge-fade-right"></div>
 
-    <!-- Inhalt (nur Kacheln) -->
+    <!-- Inhalt – nur Kacheln -->
     <main class="content">
       <div class="tile-grid">
-        <!-- GROSSE KACHEL MIT SCROLLBAREM RANKING -->
+        <!-- GROSSE KACHEL: Ranking -->
         <div class="tile tile-large">
           <div class="tile-inner">
             <div class="tile-label">Live-Ranking</div>
             <div class="tile-title">Interne Bereiche</div>
-            <div class="tile-meta">Dummy-Ranking – später echte Daten</div>
+            <div class="tile-meta">Übersicht der wichtigsten Module</div>
 
-            <div class="ranking-scroll" id="rankingScroll">
+            <div class="ranking-scroll">
               <div class="ranking-list">
-                <div class="ranking-item active">
+                <div class="ranking-item">
                   <div class="ranking-item-left">
                     <div class="ranking-badge">1</div>
                     <div class="ranking-name">Kundenportal</div>
@@ -780,12 +670,12 @@
           <div class="tile-tag">Ranking</div>
         </div>
 
-        <!-- KLEINE KACHEL – ANIMIERTER AKTIENCHART (MITTLERE HÖHE) -->
+        <!-- MITTLERE KACHEL: Chart -->
         <div class="tile tile-small">
           <div class="tile-inner">
             <div class="chart-header">
-              <div class="chart-title">Dummy-Aktie • RB-INDEX</div>
-              <div class="chart-chip" id="chartChip">+3,4 %</div>
+              <div class="chart-title">RB-INDEX • Dummy</div>
+              <div class="chart-chip">+3,4 %</div>
             </div>
             <div class="chart-meta">Monatsverlauf – reine Demo</div>
 
@@ -796,7 +686,6 @@
                     class="chart-line"
                     points="0,45 15,40 30,42 45,32 60,36 75,25 90,30 105,18 120,24 135,15 150,20"
                   />
-                  <circle class="chart-dot" cx="150" cy="20" r="3" />
                 </g>
               </svg>
             </div>
@@ -812,20 +701,20 @@
             </div>
 
             <div class="chart-footer">
-              <span>RB-INDEX • Dummy</span>
-              <span id="chartFooterText">Langsame Simulation • 1M</span>
+              <span>Simulierter Verlauf</span>
+              <span>Layout-Test</span>
             </div>
           </div>
           <div class="tile-tag">Chart</div>
         </div>
 
-        <!-- Zwei XS-Nebeneinander (zusammen ≈ mittlere Kachel) -->
-        <div class="tile tile-xs" id="tileRequests">
+        <!-- Zwei kleine Kacheln nebeneinander -->
+        <div class="tile tile-xs">
           <div class="tile-inner">
             <div class="tile-label">Heute</div>
             <div class="tile-title">Neue Anfragen</div>
-            <div class="tile-value grow-number" id="newRequestsValue">+4</div>
-            <div class="tile-meta">Dummywert – animierter Zähler</div>
+            <div class="tile-value">+4</div>
+            <div class="tile-meta">Nur Dummy für Layout</div>
           </div>
         </div>
 
@@ -834,21 +723,22 @@
             <div class="tile-label">Formulare</div>
             <div class="tile-title">Offen</div>
             <div class="tile-value">7</div>
-            <div class="tile-meta">Später Upload inkl. Bilder</div>
+            <div class="tile-meta">Später mit echten Daten</div>
           </div>
         </div>
 
-        <!-- Zwei mittlere übereinander -->
+        <!-- MITTLERE KACHEL -->
         <div class="tile tile-small">
           <div class="tile-inner">
             <div class="tile-label">Mitglieder</div>
             <div class="tile-title">Team</div>
             <div class="tile-value">12</div>
-            <div class="tile-meta">Benutzerverwaltung – Rollen & Rechte</div>
+            <div class="tile-meta">Benutzerverwaltung, Rollen, Rechte</div>
           </div>
           <div class="tile-tag">Team</div>
         </div>
 
+        <!-- MITTLERE KACHEL -->
         <div class="tile tile-small">
           <div class="tile-inner">
             <div class="tile-label">Login & Sicherheit</div>
@@ -860,17 +750,12 @@
           <div class="tile-tag">Security</div>
         </div>
 
-        <!-- Nochmal Kombi mit XS -->
+        <!-- Zwei kleine Kacheln -->
         <div class="tile tile-xs">
-          <div class="tile-inner" style="display:flex;flex-direction:column;gap:6px;">
+          <div class="tile-inner">
             <div class="tile-label">Ping</div>
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-              <div>
-                <div class="tile-title">Backend</div>
-                <div class="tile-meta" id="pingValue">24 ms (Dummy)</div>
-              </div>
-              <div class="ping-dot"></div>
-            </div>
+            <div class="tile-title">Backend</div>
+            <div class="tile-meta">24 ms • Dummy</div>
           </div>
         </div>
 
@@ -878,35 +763,31 @@
           <div class="tile-inner">
             <div class="tile-label">Modus</div>
             <div class="tile-title">Sandbox</div>
-            <div class="tile-meta" style="margin-bottom:6px;">Nur Testoberfläche – kein Live-System</div>
-            <div class="sandbox-pill" id="sandboxPill">
-              <span class="sandbox-dot"></span>
-              <span>Sandbox aktiv</span>
+            <div class="tile-meta">Nur Testoberfläche – kein Live-System</div>
+          </div>
+        </div>
+
+        <!-- NEUE MITTLERE KACHEL UNTEN -->
+        <div class="tile tile-small">
+          <div class="tile-inner">
+            <div class="tile-label">System</div>
+            <div class="tile-title">Notizen & Status</div>
+            <div class="tile-meta">
+              Platzhalter für Hinweise, Statusmeldungen oder kurze Zusammenfassungen.
             </div>
           </div>
+          <div class="tile-tag">Übersicht</div>
         </div>
       </div>
     </main>
   </div>
 
-  <!-- Bottom Navigation -->
+  <!-- Bottom Navigation – nur Icons -->
   <nav class="bottom-nav">
-    <div class="nav-button nav-active">
-      <div class="nav-icon">◎</div>
-      <div>Start</div>
-    </div>
-    <div class="nav-button">
-      <div class="nav-icon">□</div>
-      <div>Kacheln</div>
-    </div>
-    <div class="nav-button">
-      <div class="nav-icon">≡</div>
-      <div>Listen</div>
-    </div>
-    <div class="nav-button">
-      <div class="nav-icon">⚙</div>
-      <div>Setup</div>
-    </div>
+    <div class="nav-button nav-active">◎</div>
+    <div class="nav-button">□</div>
+    <div class="nav-button">≡</div>
+    <div class="nav-button">⚙</div>
   </nav>
 
   <script>
@@ -927,15 +808,16 @@
       });
     });
 
-    // Dummy Profil-Klick
-    document.getElementById('profileArea').addEventListener('click', () => {
-      alert('Dummy: Profil-Auswahl kommt später hier rein.');
-    });
-
-    // Sidebar Settings Button
+    // Sidebar Settings Button (Dummy)
     const sidebarSettingsBtn = document.getElementById('sidebarSettingsBtn');
     sidebarSettingsBtn.addEventListener('click', () => {
       alert('Dummy: Systemstatus & Einstellungen folgen später.');
+    });
+
+    // Profil-Avatar Klick (Dummy-Testprofil)
+    const profileAvatar = document.getElementById('profileAvatar');
+    profileAvatar.addEventListener('click', () => {
+      alert('Dummy: Testprofil "Teamchef" ausgewählt.');
     });
 
     // Bottom-Navigation aktiv schalten
@@ -947,90 +829,12 @@
       });
     });
 
-    // Animiertes Ranking – aktive Zeile wandert nach unten
-    const rankingItems = document.querySelectorAll('.ranking-item');
-    const rankingScroll = document.getElementById('rankingScroll');
-    if (rankingItems.length > 0) {
-      let activeIndex = 0;
-      setInterval(() => {
-        rankingItems[activeIndex].classList.remove('active');
-        activeIndex = (activeIndex + 1) % rankingItems.length;
-        rankingItems[activeIndex].classList.add('active');
-
-        // Scroll leicht mitführen
-        const activeEl = rankingItems[activeIndex];
-        const offsetTop = activeEl.offsetTop;
-        rankingScroll.scrollTo({
-          top: offsetTop - 20,
-          behavior: 'smooth'
-        });
-      }, 2200);
-    }
-
-    // Animierter Zähler "Neue Anfragen"
-    const newRequestsValueEl = document.getElementById('newRequestsValue');
-    if (newRequestsValueEl) {
-      let base = 4;
-      setInterval(() => {
-        const randomDelta = Math.random() > 0.5 ? 1 : -1;
-        base = Math.max(0, base + randomDelta);
-        newRequestsValueEl.textContent = '+' + base;
-        newRequestsValueEl.classList.add('bump');
-        setTimeout(() => newRequestsValueEl.classList.remove('bump'), 150);
-      }, 3000);
-    }
-
-    // Ping-Wert leicht variieren
-    const pingValueEl = document.getElementById('pingValue');
-    if (pingValueEl) {
-      let ping = 24;
-      setInterval(() => {
-        const variation = (Math.random() * 6 - 3) | 0; // -3 bis +2
-        const newPing = Math.max(12, ping + variation);
-        pingValueEl.textContent = newPing + ' ms (Dummy)';
-        ping = newPing;
-      }, 2500);
-    }
-
-    // Sandbox-Pill klickbar (Text wechselt)
-    const sandboxPill = document.getElementById('sandboxPill');
-    if (sandboxPill) {
-      let sandboxActive = true;
-      sandboxPill.addEventListener('click', () => {
-        sandboxActive = !sandboxActive;
-        const label = sandboxPill.querySelector('span:last-child');
-        label.textContent = sandboxActive ? 'Sandbox aktiv' : 'Sandbox pausiert';
-      });
-    }
-
-    // Chart Dummy-Wechsel Text/Prozent
-    const chartChip = document.getElementById('chartChip');
-    const chartFooterText = document.getElementById('chartFooterText');
-    if (chartChip && chartFooterText) {
-      let positive = true;
-      setInterval(() => {
-        positive = !positive;
-        if (positive) {
-          chartChip.textContent = '+3,4 %';
-          chartFooterText.textContent = 'Langsame Simulation • 1M';
-        } else {
-          chartChip.textContent = '-1,2 %';
-          chartFooterText.textContent = 'Kleine Korrektur • Dummy';
-        }
-      }, 8000);
-    }
-
     // Service Worker Registrierung (für Web App)
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js').catch(() => {});
       });
     }
-
-    // Optionaler Auto-Reload bei Fokus (aktuell auskommentiert)
-    // window.addEventListener('focus', () => {
-    //   location.reload();
-    // });
   </script>
 </body>
 </html>
