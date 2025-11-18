@@ -10,6 +10,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
 
+  <!-- Manifest einbinden -->
   <link rel="manifest" href="/manifest.json">
 
   <style>
@@ -22,6 +23,7 @@
     html {
       background: radial-gradient(circle at top, #141824 0, #050509 45%, #020208 100%);
       overscroll-behavior-y: contain; /* verhindert weiße Fläche beim Ziehen */
+      -webkit-text-size-adjust: 100%; /* verhindert Auto-Zoom bei Inputs */
     }
 
     body {
@@ -31,6 +33,7 @@
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
+      touch-action: manipulation; /* weniger Doppeltap-Zoom */
     }
 
     .app-frame {
@@ -248,7 +251,7 @@
       background: linear-gradient(to left, rgba(5, 5, 9, 1) 0, rgba(5, 5, 9, 0) 100%);
     }
 
-    /* INHALT – jetzt scrollbar, nichts wird mehr abgeschnitten */
+    /* INHALT – scrollbar */
     .content {
       max-width: 900px;
       margin: 0 auto;
@@ -262,7 +265,6 @@
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
-      /* keine feste Höhe mehr → Inhalt darf wachsen */
     }
 
     .tile {
@@ -364,7 +366,7 @@
       height: 170px;
     }
 
-    /* Ranking-Liste (ruhig) */
+    /* Ranking-Liste */
     .ranking-scroll {
       margin-top: 8px;
       max-height: 220px;
@@ -832,7 +834,7 @@
     // Profil-Avatar Klick (Dummy-Testprofil)
     const profileAvatar = document.getElementById('profileAvatar');
     profileAvatar.addEventListener('click', () => {
-      alert('Dummy: Testprofil \"Teamchef\" ausgewählt.');
+      alert('Dummy: Testprofil "Teamchef" ausgewählt.');
     });
 
     // Bottom-Navigation aktiv schalten
@@ -844,10 +846,29 @@
       });
     });
 
-    // Service Worker Registrierung (für Web App)
+    // Service Worker Registrierung mit Auto-Update
     if ('serviceWorker' in navigator) {
+      let hasReloaded = false;
+
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch(() => {});
+        navigator.serviceWorker.register('/sw.js').then(reg => {
+          // Wenn es eine neue Version gibt
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            if (!newWorker) return;
+
+            newWorker.addEventListener('statechange', () => {
+              if (
+                newWorker.state === 'activated' &&
+                navigator.serviceWorker.controller &&
+                !hasReloaded
+              ) {
+                hasReloaded = true;
+                window.location.reload();
+              }
+            });
+          });
+        }).catch(() => {});
       });
     }
   </script>
