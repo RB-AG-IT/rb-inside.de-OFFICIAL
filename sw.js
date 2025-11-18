@@ -1,14 +1,17 @@
+// sw.js – minimal, mit sofortigem Update
 
-// sw.js – minimal, nur für "installierbar"
 self.addEventListener('install', (event) => {
+  // neue Version sofort aktivieren
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  clients.claim();
+  // alle offenen Seiten übernehmen
+  event.waitUntil(clients.claim());
 });
 
-// Kein Offline-Caching nötig am Anfang
+// Kein spezielles Caching – Browser lädt immer direkt vom Server
 self.addEventListener('fetch', (event) => {
-  // Standard: Browser macht ganz normal weiter
+  // Standard: alles normal durchreichen
+  return;
 });
