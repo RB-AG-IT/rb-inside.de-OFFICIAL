@@ -15,3 +15,4 @@ self.addEventListener('fetch', (event) => {
   // Standard: alles normal durchreichen
   return;
 });
+
